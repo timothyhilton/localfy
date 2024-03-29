@@ -1,17 +1,10 @@
-import { contextBridge, ipcMain, ipcRenderer } from "electron"
+import { ipcMain, shell } from "electron"
+
 
 export function setupIpcMainOns(): void{
 
-    ipcMain.on('consolelog', (message) => {
-        console.log(message);
+    ipcMain.on('openExternal', (event, link: string) => {
+        shell.openExternal(link)
     })
 
-}
-
-export function setupContextBridge(): void{
-
-    contextBridge.exposeInMainWorld('myAPI', {
-        consolelog: (message: string) => ipcRenderer.send('consolelog', message)
-    })
-    
 }
