@@ -1,4 +1,4 @@
-import { app, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow } from 'electron'
 import path from 'node:path'
 
 // The built directory structure
@@ -25,6 +25,21 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
   })
+
+  const protocolName = 'fyfy';
+  if (process.defaultApp && process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(protocolName, process.execPath, [process.argv[1]]);
+  } else {
+    app.setAsDefaultProtocolClient(protocolName);
+  }
+
+  win.webContents.on('will-navigate', (event, newUrl) => {
+    if (newUrl.startsWith(`${protocolName}://redirect`)) {
+      // Handle the redirect here, e.g., extract the access token from the URL
+      console.log("heheheha")
+      event.preventDefault();
+    }
+  });
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
