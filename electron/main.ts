@@ -1,4 +1,5 @@
 import { app, protocol, BrowserWindow, dialog } from 'electron'
+import { setupIpcMainOns } from './ipc-functions'
 import path from 'node:path'
 
 // The built directory structure
@@ -84,7 +85,10 @@ if((process.platform == "win32") || (process.platform == "linux")){
   }
 }
 
-app.whenReady().then(createWindow)
+app.whenReady().then(() => {
+  setupIpcMainOns();
+  createWindow();
+})
 
 // protocol handler for mac
 if(process.platform == "darwin"){
