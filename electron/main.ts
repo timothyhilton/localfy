@@ -1,4 +1,4 @@
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow, dialog } from 'electron'
 import path from 'node:path'
 
 // The built directory structure
@@ -26,20 +26,13 @@ function createWindow() {
     },
   })
 
+  // setup protocol "fyfy://"
   const protocolName = 'fyfy';
   if (process.defaultApp && process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(protocolName, process.execPath, [process.argv[1]]);
+    app.setAsDefaultProtocolClient(protocolName, process.execPath, [path.resolve(process.argv[1])]);
   } else {
     app.setAsDefaultProtocolClient(protocolName);
   }
-
-  win.webContents.on('will-navigate', (event, newUrl) => {
-    if (newUrl.startsWith(`${protocolName}://redirect`)) {
-      // Handle the redirect here, e.g., extract the access token from the URL
-      console.log("heheheha")
-      event.preventDefault();
-    }
-  });
 
   // Test active push message to Renderer-process.
   win.webContents.on('did-finish-load', () => {
@@ -72,4 +65,31 @@ app.on('activate', () => {
   }
 })
 
+// protocol handling for windows and linux
+if((process.platform == "win32") || (process.platform == "linux")){
+  const gotTheLock = app.requestSingleInstanceLock()
+
+  if (!gotTheLock) {
+    app.quit()
+  } else {
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+      // Someone tried to run a second instance, we should focus our window.
+      if (win) {
+        if (win.isMinimized()) win.restore()
+        win.focus()
+      }
+      // the commandLine is array of strings in which last element is deep link url
+      dialog.showErrorBox('Welcome Back', `You arrived from: ${commandLine.pop()}`)
+    })
+  }
+}
+
 app.whenReady().then(createWindow)
+
+// protocol handler for mac
+if(process.platform == "darwin"){
+  // Handle the protocol. In this case, we choose to show an Error Box.
+  app.on('open-url', (event, url) => {
+    dialog.showErrorBox('Welcome Back', `You arrived from: ${url}`)
+  })
+}
