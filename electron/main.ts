@@ -79,8 +79,7 @@ if((process.platform == "win32") || (process.platform == "linux")){
         if (win.isMinimized()) win.restore()
         win.focus()
       }
-      // the commandLine is array of strings in which last element is deep link url
-      dialog.showErrorBox('Welcome Back', `You arrived from: ${commandLine.pop()}`)
+      handleAuthCallback(commandLine.pop()!)
     })
   }
 }
@@ -94,6 +93,12 @@ app.whenReady().then(() => {
 if(process.platform == "darwin"){
   // Handle the protocol. In this case, we choose to show an Error Box.
   app.on('open-url', (event, url) => {
-    dialog.showErrorBox('Welcome Back', `You arrived from: ${url}`)
+    handleAuthCallback(url)
   })
+}
+
+function handleAuthCallback(url: string) {
+  const accessToken = url.match(/access_token=([^&]+)/);
+  const token = accessToken ? accessToken[1] : null;
+  dialog.showErrorBox('Welcome Back', `Your access token is: ${token}`)
 }
