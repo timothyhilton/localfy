@@ -27,6 +27,8 @@ function createWindow() {
     },
   })
 
+  win.setMenu(null)
+
   // setup protocol "fyfy://"
   const protocolName = 'fyfy';
   if (process.defaultApp && process.argv.length >= 2) {
@@ -101,4 +103,6 @@ function handleAuthCallback(url: string) {
   const accessToken = url.match(/access_token=([^&]+)/);
   const token = accessToken ? accessToken[1] : null;
   dialog.showErrorBox('Welcome Back', `Your access token is: ${token}`)
+
+  win?.webContents.send("set-token", token)
 }

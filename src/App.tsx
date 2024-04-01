@@ -1,22 +1,19 @@
 import { useState } from 'react'
 import { Button } from './components/ui/button';
 import AuthButton from './components/authButton';
-
+// { isLoggedIn, token }: { isLoggedIn: boolean, token: string | undefined }
 function App() {
-  const [count, setCount] = useState(0)
+  const isLoggedIn = false;
 
-  function changeCount(){
-    setCount(count + 1)
-    console.log("hi")
+  if(isLoggedIn){
+
+  } else {
+    return(
+      <div className="font-bold flex flex-row min-h-screen justify-center items-center">
+        <AuthButton />
+      </div>
+    )
   }
-  
-  return (
-    <div className="font-bold">
-      hello {count}
-      <Button onClick={changeCount}>update count</Button>
-      <AuthButton />
-    </div>
-  )
 }
 
 export default App

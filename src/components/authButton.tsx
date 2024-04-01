@@ -7,6 +7,6 @@ export default function AuthButton(){
     }
 
     return (
-        <Button onClick={startAuthFlow}>hi</Button>
+        <Button onClick={startAuthFlow}>Sign in With Spotify</Button>
     )
 }
