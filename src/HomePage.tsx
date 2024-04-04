@@ -1,14 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useTokenStore } from './stores/tokenStore.ts';
-
-type Playlist = {
-  name: string;
-  // Add other properties if needed
-};
+import Playlist from './components/playlist.tsx';
+import PlaylistType from './types/PlaylistType.ts'
 
 export default function HomePage() {
   const { token } = useTokenStore();
-  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [playlists, setPlaylists] = useState<PlaylistType[]>([]);
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -35,7 +32,7 @@ export default function HomePage() {
     <>
       hi!! {token}
       {playlists.map((playlist, index) => (
-        <p key={index}>{playlist.name}</p>
+        <Playlist index={index} playlist={playlist}/>
       ))}
     </>
   );
