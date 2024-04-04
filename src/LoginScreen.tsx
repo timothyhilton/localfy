@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Button } from './components/ui/button';
 import AuthButton from './components/authButton';
+import HomePage from './HomePage';
 
 // { isLoggedIn, token }: { isLoggedIn: boolean, token: string | undefined }
 function LoginScreen() {
@@ -22,9 +23,7 @@ function LoginScreen() {
 
   if(token){
     return(
-      <>
-        
-      </>
+      <HomePage token={token} />
     )
   } else {
     return(
