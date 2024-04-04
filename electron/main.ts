@@ -86,23 +86,21 @@ if((process.platform == "win32") || (process.platform == "linux")){
   }
 }
 
-app.whenReady().then(() => {
-  setupIpcMainOns();
-  createWindow();
-})
-
 // protocol handler for mac
 if(process.platform == "darwin"){
-  // Handle the protocol. In this case, we choose to show an Error Box.
   app.on('open-url', (event, url) => {
     handleAuthCallback(url)
   })
 }
 
+app.whenReady().then(() => {
+  setupIpcMainOns();
+  createWindow();
+})
+
 function handleAuthCallback(url: string) {
   const accessToken = url.match(/access_token=([^&]+)/);
   const token = accessToken ? accessToken[1] : null;
-  dialog.showErrorBox('Welcome Back', `Your access token is: ${token}`)
 
   win?.webContents.send("set-token", token)
 }
