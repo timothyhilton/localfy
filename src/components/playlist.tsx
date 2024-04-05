@@ -14,7 +14,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
     return(
         <Card className="h-[100px]">
             <CardHeader>
-                <CardTitle>{playlist.name}</CardTitle>
+                <CardTitle className="text-lg">{playlist.name}</CardTitle>
                 <CardDescription>{playlist.description}</CardDescription>
             </CardHeader>
         </Card>
