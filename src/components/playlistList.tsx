@@ -29,12 +29,12 @@ export default function PlaylistList() {
     }, [token]);
 
     return(
-        <>
+        <div className="grid grid-cols-4">
             {playlists.map((playlist, index) => {
                 return(
                     <Playlist index={index} playlist={playlist}/>
                 )
             })}
-        </>
+        </div>
     )
 }
