@@ -5,6 +5,7 @@ import { Input } from "../ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
 import { Button } from "../ui/button"
 import StatusButton from "./statusButton"
+import DownloadButton from "./downloadButton"
 
 type playlistArgs = {
     index: number
@@ -23,6 +24,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
+                    <DownloadButton />
                 </div>
             </CardHeader>
         </Card>
