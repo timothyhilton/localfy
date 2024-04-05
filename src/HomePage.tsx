@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useTokenStore } from './stores/tokenStore.ts';
-import Playlist from './components/playlist.tsx';
+import Playlist from './components/playlist/playlist.tsx';
 import PlaylistType from './types/PlaylistType.ts'
-import PlaylistList from './components/playlistList.tsx';
+import PlaylistList from './components/playlist/playlistList.tsx';
 
 interface userInfo {
     display_name: string;
@@ -34,8 +34,8 @@ export default function HomePage() {
     }, [token]);
 
     return(
-        <div className="flex flex-col space-y-10">
-            <h1 className="text-4xl font-bold m-auto mt-[3rem]">Welcome back, {user?.display_name}</h1>
+        <div className="flex flex-col">
+            <h1 className="text-4xl font-bold mx-auto my-[3rem]">Welcome back, {user?.display_name}</h1>
             <PlaylistList />
         </div>
     )
