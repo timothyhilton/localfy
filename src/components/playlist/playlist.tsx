@@ -13,12 +13,12 @@ type playlistArgs = {
 
 export default function Playlist({ index, playlist }: playlistArgs){
     return(
-        <Card className="h-[100px]">
+        <Card className="h-[100px] w-[20rem]]">
             <CardHeader>
                 <div className="flex flex-row">
                     <img src={playlist.images[0].url} className="w-[4rem] h-[4rem] mt-[-0.4rem] ml-[-0.4rem] mr-4"></img>
-                    <div className="flex flex-col">
-                        <CardTitle className="text-lg my-auto [&:not(:hover)]:truncate">
+                    <div className="flex flex-col truncate ml-1">
+                        <CardTitle className="text-lg">
                             {playlist.name}
                         </CardTitle>
                         <StatusButton />

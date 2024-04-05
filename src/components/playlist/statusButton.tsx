@@ -1,7 +1,7 @@
 import { Button } from "../ui/button";
 
-export default function statusButton() {
+export default function statusText() {
     return(
-        <Button>hello</Button>
+        <p className="text-sm text-muted-foreground">out of date</p>
     )
 }
