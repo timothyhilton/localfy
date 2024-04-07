@@ -13,6 +13,7 @@ type playlistArgs = {
 }
 
 export default function Playlist({ index, playlist }: playlistArgs){
+
     return(
         <Card className="h-[100px] w-[20rem]]" tabIndex={index}>
             <CardHeader>
@@ -30,7 +31,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadButton />
+                    <DownloadButton onClick={() => window.ipcRenderer.send("startBackup", playlist.id)}/>
                 </div>
             </CardHeader>
         </Card>

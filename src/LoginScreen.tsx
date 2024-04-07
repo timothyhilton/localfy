@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card.tsx';
+
 const formSchema = z.object({
   client_id: z.string().min(32, {
     message: "client id must at least 32 characters!",
@@ -40,7 +41,6 @@ function LoginScreen() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setClientId(values.client_id);
-    console.log("TEST", values.client_id);
     window.ipcRenderer.send("startAuthFlow", values.client_id);
   }
 
