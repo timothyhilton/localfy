@@ -1,9 +1,5 @@
 import PlaylistType from "@/types/PlaylistType"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../ui/card"
-import { Label } from "../ui/label"
-import { Input } from "../ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select"
-import { Button } from "../ui/button"
+import { Card, CardHeader, CardTitle } from "../ui/card"
 import StatusButton from "./statusButton"
 import DownloadButton from "./downloadButton"
 

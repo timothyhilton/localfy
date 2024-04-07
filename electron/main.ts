@@ -1,4 +1,4 @@
-import { app, protocol, BrowserWindow, dialog } from 'electron'
+import { app, BrowserWindow } from 'electron'
 import { setupIpcMainOns } from './ipc-functions'
 import path from 'node:path'
 
@@ -75,7 +75,7 @@ if((process.platform == "win32") || (process.platform == "linux")){
   if (!gotTheLock) {
     app.quit()
   } else {
-    app.on('second-instance', (event, commandLine, workingDirectory) => {
+    app.on('second-instance', (_event, commandLine) => {
       // Someone tried to run a second instance, we should focus our window.
       if (win) {
         if (win.isMinimized()) win.restore()
@@ -88,7 +88,7 @@ if((process.platform == "win32") || (process.platform == "linux")){
 
 // protocol handler for mac
 if(process.platform == "darwin"){
-  app.on('open-url', (event, url) => {
+  app.on('open-url', (_event, url) => {
     handleAuthCallback(url)
   })
 }

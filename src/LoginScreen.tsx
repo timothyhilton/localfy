@@ -16,7 +16,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Card, CardContent, CardHeader, CardTitle } from './components/ui/card.tsx';
+import { CardContent, CardHeader, CardTitle } from './components/ui/card.tsx';
 
 const formSchema = z.object({
   client_id: z.string().min(32, {
