@@ -2,6 +2,6 @@ export default interface PlaylistType {
     name: string;
     images: [any];
     description: string;
-    id: number
+    id: string
     // Add other properties if needed
 };

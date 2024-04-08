@@ -1,7 +1,8 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
-import { join } from 'path'
+import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import startBackup from './backupHelper'
 
 let mainWindow: BrowserWindow
 
@@ -18,6 +19,14 @@ function createWindow(): void {
       sandbox: false
     }
   })
+
+  // setup protocol "fyfy://"
+  const protocolName = 'fyfy';
+  if (process.defaultApp && process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient(protocolName, process.execPath, [resolve(process.argv[1])]);
+  } else {
+    app.setAsDefaultProtocolClient(protocolName);
+  }
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
@@ -52,7 +61,9 @@ app.whenReady().then(() => {
   })
 
   // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
+  ipcMain.on('startBackup', (_event, playlistId: string) => {
+    startBackup(playlistId)
+  })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
     shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)

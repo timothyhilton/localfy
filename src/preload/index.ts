@@ -5,6 +5,7 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   startAuthFlow: (client_id: string) => ipcRenderer.send("startAuthFlow", client_id),
   onSetToken: (callback: Function) => ipcRenderer.on('set-token', (_event, value: string) => callback(value)),
+  startBackup: (playlistId: string) => ipcRenderer.send("startBackup", playlistId)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

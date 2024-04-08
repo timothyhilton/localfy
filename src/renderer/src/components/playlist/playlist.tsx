@@ -18,7 +18,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                     {playlist.images ?
                         <img src={playlist.images[0].url} className="w-[4rem] h-[4rem] mt-[-0.4rem] ml-[-0.4rem] mr-4"></img>
                         :
-                        <img src="./nocover.png" className="w-[4rem] h-[4rem] mt-[-0.4rem] ml-[-0.4rem] mr-4"></img>
+                        <img src="../assets/nocover.png" className="w-[4rem] h-[4rem] mt-[-0.4rem] ml-[-0.4rem] mr-4"></img>
                     }
                     
                     <div className="flex flex-col truncate ml-1">
@@ -27,7 +27,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadButton onClick={() => window.ipcRenderer.send("startBackup", playlist.id)}/>
+                    <DownloadButton onClick={() => window.api.startBackup(playlist.id)}/>
                 </div>
             </CardHeader>
         </Card>
