@@ -3,9 +3,11 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
+let mainWindow: BrowserWindow
+
 function createWindow(): void {
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
@@ -52,6 +54,10 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
+  ipcMain.on('startAuthFlow', (_event, client_id: string) => {
+    shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
+  })
+
   createWindow()
 
   app.on('activate', function () {
@@ -72,3 +78,35 @@ app.on('window-all-closed', () => {
 
 // In this file you can include the rest of your app"s specific main process
 // code. You can also put them in separate files and require them here.
+
+// protocol handling for windows and linux
+if((process.platform == "win32") || (process.platform == "linux")){
+  const gotTheLock = app.requestSingleInstanceLock()
+
+  if (!gotTheLock) {
+    app.quit()
+  } else {
+    app.on('second-instance', (_event, commandLine) => {
+      // Someone tried to run a second instance, we should focus our window.
+      if (mainWindow) {
+        if (mainWindow.isMinimized()) mainWindow.restore()
+          mainWindow.focus()
+      }
+      handleAuthCallback(commandLine.pop()!)
+    })
+  }
+}
+
+// protocol handler for mac
+if(process.platform == "darwin"){
+  app.on('open-url', (_event, url) => {
+    handleAuthCallback(url)
+  })
+}
+
+function handleAuthCallback(url: string) {
+  const accessToken = url.match(/access_token=([^&]+)/);
+  const token = accessToken ? accessToken[1] : null;
+
+  mainWindow.webContents.send("set-token", token)
+}
