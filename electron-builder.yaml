@@ -1,7 +1,7 @@
 appId: com.timothyhilton.localfy
 productName: localfy
 directories:
-  buildResources: build
+  buildResources: dist-electron
 files:
   - '!**/.vscode/*'
   - '!src/*'
@@ -10,8 +10,10 @@ files:
   - '!{.env,.env.*,.npmrc,pnpm-lock.yaml}'
   - '!{tsconfig.json,tsconfig.node.json,tsconfig.web.json}'
 asarUnpack:
+  - node_modules/sqlite3
+  - out/main/chunks/*.node
   - resources/**
-afterSign: build/notarize.js
+afterSign: dist/notarize.js
 win:
   executableName: localfy
 nsis:
@@ -20,7 +22,7 @@ nsis:
   uninstallDisplayName: ${productName}
   createDesktopShortcut: always
 mac:
-  entitlementsInherit: build/entitlements.mac.plist
+  entitlementsInherit: dist/entitlements.mac.plist
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
