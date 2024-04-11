@@ -25,35 +25,9 @@ export default function PlaylistList() {
                 console.log(playlist.tracks);
             });
 
-            setPlaylists(await fetchPlaylistsContents(data.items))
+            setPlaylists(data.items)
 
         };
-
-        // appends the list of tracks in searchable form to the playlist list provided from spotify
-        async function fetchPlaylistsContents(playlists: PlaylistType[]){
-
-            playlists.forEach(async playlist => {
-
-                const res = await fetch(playlist.tracks.href, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    },
-                });
-                if (!res.ok) {
-                    throw new Error('Failed to fetch playlist contents');
-                }
-
-                let i = playlists.findIndex(playlist2 => playlist2 == playlist); // todo: make this more efficient?
-                playlists[i].trackNameList = await res.json();
-
-                
-
-            })
-
-            console.log(playlists)
-
-            return playlists
-        }
 
         fetchPlaylists();
     }, [token]);

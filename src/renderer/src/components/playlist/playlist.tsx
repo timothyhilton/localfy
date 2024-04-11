@@ -2,6 +2,7 @@ import PlaylistType from "@renderer/types/PlaylistType"
 import { Card, CardHeader, CardTitle } from "../ui/card"
 import StatusButton from "./statusButton"
 import DownloadButton from "./downloadButton"
+import { useTokenStore } from "@renderer/stores/tokenStore"
 
 type playlistArgs = {
     index: number
@@ -9,9 +10,25 @@ type playlistArgs = {
 }
 
 export default function Playlist({ index, playlist }: playlistArgs){
+    const { token } = useTokenStore();
+
+    async function startBackup(){
+
+        const res = await fetch(playlist.tracks.href, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+        });
+        if (!res.ok) {
+            throw new Error('Failed to fetch playlist contents');
+        }
+
+        window.api.startBackup(await res.json());
+
+    }
 
     return(
-        <Card className="h-[100px] w-[20rem]]" tabIndex={index}>
+        <Card className="h-[100px] w-[20rem]]" tabIndex={index} key={index}>
             <CardHeader>
                 <div className="flex flex-row">
                     
@@ -27,7 +44,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadButton onClick={() => window.api.startBackup(playlist.id)}/>
+                    <DownloadButton onClick={() => startBackup()}/>
                 </div>
             </CardHeader>
         </Card>

@@ -11,5 +11,4 @@ export default interface PlaylistType {
         href: string,
         total: number
     };
-    trackNameList: [string]
 };

@@ -3,6 +3,7 @@ import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
+import SpotifyTrackListResType from './types/SpotifyTrackListResType'
 
 let mainWindow: BrowserWindow
 
@@ -60,9 +61,8 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  // IPC test
-  ipcMain.on('startBackup', (_event, playlistId: string) => {
-    startBackup(playlistId)
+  ipcMain.on('startBackup', (_event, tracks: SpotifyTrackListResType) => {
+    startBackup(tracks)
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {

@@ -4,33 +4,36 @@ import ytdl from 'ytdl-core';
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg"
 import readline from "readline";
+import SpotifyTrackResType from "./types/SpotifyTrackListResType"
 
 const url = "https://www.youtube.com/watch?v=o8LRks7K-8o";
 
-export default async function startBackup(playlistId: string){
-    console.log(`initiating backup of playlist with id: ${playlistId}`)
+export default async function startBackup(tracks: SpotifyTrackResType){
+    console.log(`initiating backup of: ${tracks.href}`)
 
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     if(directory.canceled) { console.log("cancelled") }
 
     console.log(directory.filePaths[0])
 
-    let id = '7wNb0pHyGuI';
+    console.log(tracks.items)
 
-    let stream = ytdl(id, {
-        quality: 'highestaudio',
-    });
+    // let id = '7wNb0pHyGuI';
 
-    let start = Date.now();
+    // let stream = ytdl(id, {
+    //     quality: 'highestaudio',
+    // });
 
-    ffmpeg(stream)
-        .audioBitrate(128)
-        .save(`${directory.filePaths[0]}/${id}.mp3`)
-        .on('progress', p => {
-            readline.cursorTo(process.stdout, 0);
-            process.stdout.write(`${p.targetSize}kb downloaded`);
-        })
-        .on('end', () => {
-            console.log(`\ndownloaded ${id} in ${(Date.now() - start) / 1000}s`);
-        });
+    // let start = Date.now();
+
+    // ffmpeg(stream)
+    //     .audioBitrate(128)
+    //     .save(`${directory.filePaths[0]}/${id}.mp3`)
+    //     .on('progress', p => {
+    //         readline.cursorTo(process.stdout, 0);
+    //         process.stdout.write(`${p.targetSize}kb downloaded`);
+    //     })
+    //     .on('end', () => {
+    //         console.log(`\ndownloaded ${id} in ${(Date.now() - start) / 1000}s`);
+    //     });
 }
