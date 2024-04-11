@@ -46,8 +46,6 @@ function LoginScreen() {
 
   useEffect(() => {
     const handleToken = (token: string) => {
-      console.log(token);
-      console.log(client_id);
       localStorage.setItem('client_id', client_id);
       useTokenStore.getState().setToken(token);
     };

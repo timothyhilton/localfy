@@ -13,6 +13,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
     const { token } = useTokenStore();
 
     async function startBackup(){
+        if(playlist.tracks.total < 1){ return }
 
         const res = await fetch(playlist.tracks.href, {
             headers: {
@@ -23,7 +24,9 @@ export default function Playlist({ index, playlist }: playlistArgs){
             throw new Error('Failed to fetch playlist contents');
         }
 
-        window.api.startBackup(await res.json());
+        const data = await res.json();
+        console.log(data)
+        window.api.startBackup(data);
 
     }
 

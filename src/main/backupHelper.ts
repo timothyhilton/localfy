@@ -1,12 +1,9 @@
-import { dialog } from "electron"
-import { exec, ExecException } from 'child_process';
+import { dialog } from "electron";
 import ytdl from 'ytdl-core';
-import fs from "fs";
-import ffmpeg from "fluent-ffmpeg"
+import ffmpeg from "fluent-ffmpeg";
 import readline from "readline";
-import SpotifyTrackResType from "./types/SpotifyTrackListResType"
-
-const url = "https://www.youtube.com/watch?v=o8LRks7K-8o";
+import SpotifyTrackResType from "./types/SpotifyTrackListResType";
+import yts from "yt-search";
 
 export default async function startBackup(tracks: SpotifyTrackResType){
     console.log(`initiating backup of: ${tracks.href}`)
@@ -14,26 +11,33 @@ export default async function startBackup(tracks: SpotifyTrackResType){
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     if(directory.canceled) { console.log("cancelled") }
 
-    console.log(directory.filePaths[0])
+    tracks.items.forEach(async item => {
 
-    console.log(tracks.items)
+        let artistsString = ""
+        item.track.artists.forEach(a => artistsString += (a.name + " "))
+        const searchQuery = `${artistsString}${item.track.name} official audio`
+        // todo: make the above more elegant
+        console.log(searchQuery)
 
-    // let id = '7wNb0pHyGuI';
+        const videoUrl = (await yts(searchQuery)).videos[0].url
 
-    // let stream = ytdl(id, {
-    //     quality: 'highestaudio',
-    // });
+        console.log(videoUrl)
 
-    // let start = Date.now();
-
-    // ffmpeg(stream)
-    //     .audioBitrate(128)
-    //     .save(`${directory.filePaths[0]}/${id}.mp3`)
-    //     .on('progress', p => {
-    //         readline.cursorTo(process.stdout, 0);
-    //         process.stdout.write(`${p.targetSize}kb downloaded`);
-    //     })
-    //     .on('end', () => {
-    //         console.log(`\ndownloaded ${id} in ${(Date.now() - start) / 1000}s`);
-    //     });
+        let stream = ytdl(videoUrl, {
+            quality: 'highestaudio',
+        });
+     
+        let start = Date.now();
+    
+        ffmpeg(stream)
+            .audioBitrate(128)
+            .save(`${directory.filePaths[0]}/${item.track.name}.mp3`)
+            .on('progress', p => {
+                readline.cursorTo(process.stdout, 0);
+                process.stdout.write(`${p.targetSize}kb downloaded`);
+            })
+            .on('end', () => {
+                console.log(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`);
+            });
+    })
 }

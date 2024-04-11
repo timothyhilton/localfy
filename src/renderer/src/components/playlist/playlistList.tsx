@@ -21,10 +21,6 @@ export default function PlaylistList() {
             }
             const data = await res.json();
 
-            (data.items as Array<any>).forEach(playlist => {
-                console.log(playlist.tracks);
-            });
-
             setPlaylists(data.items)
 
         };
