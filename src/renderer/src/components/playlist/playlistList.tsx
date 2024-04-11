@@ -8,22 +8,52 @@ export default function PlaylistList() {
     const [playlists, setPlaylists] = useState<PlaylistType[]>([]);
 
     useEffect(() => {
-        const fetchPlaylists = async () => {
-            try {
-                const response = await fetch('https://api.spotify.com/v1/me/playlists', {
+
+        async function fetchPlaylists(){
+
+            const res = await fetch('https://api.spotify.com/v1/me/playlists', {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            if (!res.ok) {
+                throw new Error('Failed to fetch playlists');
+            }
+            const data = await res.json();
+
+            (data.items as Array<any>).forEach(playlist => {
+                console.log(playlist.tracks);
+            });
+
+            setPlaylists(await fetchPlaylistsContents(data.items))
+
+        };
+
+        // appends the list of tracks in searchable form to the playlist list provided from spotify
+        async function fetchPlaylistsContents(playlists: PlaylistType[]){
+
+            playlists.forEach(async playlist => {
+
+                const res = await fetch(playlist.tracks.href, {
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`
                     },
                 });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch playlists');
+                if (!res.ok) {
+                    throw new Error('Failed to fetch playlist contents');
                 }
-                const data = await response.json();
-                setPlaylists(data.items); // Assuming the playlists are nested under the 'items' key
-            } catch (error) {
-                console.error('Error fetching playlists:', error);
-            }
-        };
+
+                let i = playlists.findIndex(playlist2 => playlist2 == playlist); // todo: make this more efficient?
+                playlists[i].trackNameList = await res.json();
+
+                
+
+            })
+
+            console.log(playlists)
+
+            return playlists
+        }
 
         fetchPlaylists();
     }, [token]);

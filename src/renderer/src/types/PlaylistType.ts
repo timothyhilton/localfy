@@ -1,7 +1,15 @@
 export default interface PlaylistType {
     name: string;
-    images: [any];
+    images: [
+        {
+            url: string
+        }
+    ];
     description: string;
-    id: string
-    // Add other properties if needed
+    id: string;
+    tracks: {
+        href: string,
+        total: number
+    };
+    trackNameList: [string]
 };
