@@ -1,8 +1,8 @@
 import PlaylistType from "@renderer/types/PlaylistType"
 import { Card, CardHeader, CardTitle } from "../ui/card"
 import StatusButton from "./statusButton"
-import DownloadButton from "./downloadButton"
 import { useTokenStore } from "@renderer/stores/tokenStore"
+import { DownloadMenu } from "@renderer/components/download-menu"
 
 type playlistArgs = {
     index: number
@@ -47,7 +47,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadButton onClick={() => startBackup()}/>
+                    <DownloadMenu onClick={() => startBackup()}/>
                 </div>
             </CardHeader>
         </Card>
