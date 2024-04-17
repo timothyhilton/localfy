@@ -14,10 +14,13 @@ import DownloadButton from '@renderer/components/playlist/downloadButton'
 import { useEffect, useState } from 'react'
 import PlaylistType from '@renderer/types/PlaylistType'
 import { useTokenStore } from '@renderer/stores/tokenStore'
+import { ScrollArea } from './ui/scroll-area'
+import { Separator } from './ui/separator'
 
 export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Element {
   const { token } = useTokenStore()
   const [open, setOpen] = useState(false)
+  const [logMessages, setLogMessages] = useState<String[]>([])
 
   async function startBackup(): Promise<void> {
     if (playlist.tracks.total < 1) {
@@ -41,6 +44,8 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
   useEffect(() => {
     const handleLog = (message: string): void => {
       console.log(message)
+      setLogMessages(logMessages => [...new Set([...logMessages, message])])
+      //todo: find the real cause of the duplicate logs instead of just filtering them out
     }
 
     window.api.onDownloadLog(handleLog)
@@ -72,6 +77,20 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
             Start backup
           </Button>
         </SheetFooter>
+
+        <ScrollArea className="rounded-md border">
+          <div className="p-4">
+            <h4 className="mb-4 text-sm font-medium leading-none">Logs</h4>
+            {logMessages.map((message) => (
+              <>
+                <div key={logMessages.indexOf(message)} className="text-xs">
+                  {message}
+                </div>
+                <Separator className="my-2" />
+              </>
+            ))}
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   )
