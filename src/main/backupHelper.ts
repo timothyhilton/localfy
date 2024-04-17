@@ -1,43 +1,55 @@
-import { dialog } from "electron";
-import ytdl from 'ytdl-core';
-import ffmpeg from "fluent-ffmpeg";
-import readline from "readline";
-import SpotifyTrackResType from "./types/SpotifyTrackListResType";
-import yts from "yt-search";
+import { dialog } from 'electron'
+import ytdl from 'ytdl-core'
+import ffmpeg from 'fluent-ffmpeg'
+import readline from 'readline'
+import SpotifyTrackResType from './types/SpotifyTrackListResType'
+import yts from 'yt-search'
+import { BrowserWindow } from 'electron/main'
 
-export default async function startBackup(tracks: SpotifyTrackResType){
-    console.log(`initiating backup of: ${tracks.href}`)
+export default async function startBackup(
+  tracks: SpotifyTrackResType,
+  windowToSendLogsTo: BrowserWindow
+): Promise<void> {
+  function logToRenderer(message: string): void {
+    console.log(message)
+    windowToSendLogsTo.webContents.send('send-download-log', message)
+  }
 
-    const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
-    if(directory.canceled) { console.log("cancelled") }
+  logToRenderer(`initiating backup of: ${tracks.href}`)
 
-    tracks.items.forEach(async item => {
+  const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+  if (directory.canceled) {
+    logToRenderer('cancelled')
+  }
 
-        let artistsString = ""
-        item.track.artists.forEach(a => artistsString += (a.name + " "))
-        const searchQuery = `${artistsString}${item.track.name} official audio`
-        // todo: make the above more elegant
-        console.log(searchQuery)
+  tracks.items.forEach(async (item) => {
+    let artistsString = ''
+    item.track.artists.forEach((a) => (artistsString += a.name + ' '))
+    const searchQuery = `${artistsString}${item.track.name} official audio`
+    // todo: make the above more elegant
 
-        const videoUrl = (await yts(searchQuery)).videos[0].url
+    logToRenderer(`Searching for: ${searchQuery}`)
 
-        console.log(videoUrl)
+    const videoUrl = (await yts(searchQuery)).videos[0].url
 
-        let stream = ytdl(videoUrl, {
-            quality: 'highestaudio',
-        });
-     
-        let start = Date.now();
-    
-        ffmpeg(stream)
-            .audioBitrate(128)
-            .save(`${directory.filePaths[0]}/${item.track.name}.mp3`)
-            .on('progress', p => {
-                readline.cursorTo(process.stdout, 0);
-                process.stdout.write(`${p.targetSize}kb downloaded`);
-            })
-            .on('end', () => {
-                console.log(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`);
-            });
+    logToRenderer(`Attempting to download ${videoUrl}`)
+
+    const stream = ytdl(videoUrl, {
+      quality: 'highestaudio'
     })
+
+    const start = Date.now()
+
+    ffmpeg(stream)
+      .audioBitrate(128)
+      .save(`${directory.filePaths[0]}/${item.track.name}.mp3`)
+      .on('progress', (p) => {
+        readline.cursorTo(process.stdout, 0)
+        process.stdout.write(`${p.targetSize}kb downloaded`)
+        // todo: make the above 2 lines compatible with the log to renderer thing
+      })
+      .on('end', () => {
+        logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`)
+      })
+  })
 }

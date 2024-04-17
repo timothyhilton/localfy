@@ -3,9 +3,12 @@ import { electronAPI } from '@electron-toolkit/preload'
 
 // Custom APIs for renderer
 const api = {
-  startAuthFlow: (client_id: string) => ipcRenderer.send("startAuthFlow", client_id),
-  onSetToken: (callback: Function) => ipcRenderer.on('set-token', (_event, value: string) => callback(value)),
-  startBackup: (playlistId: string) => ipcRenderer.send("startBackup", playlistId)
+  startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
+  onSetToken: (callback: Function) =>
+    ipcRenderer.on('set-token', (_event, value: string) => callback(value)),
+  onDownloadLog: (callback: Function) =>
+    ipcRenderer.on('send-download-log', (_event, value: string) => callback(value)),
+  startBackup: (playlistId: string) => ipcRenderer.send('startBackup', playlistId)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

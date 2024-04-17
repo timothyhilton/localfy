@@ -1,8 +1,8 @@
 import PlaylistType from "@renderer/types/PlaylistType"
 import { Card, CardHeader, CardTitle } from "../ui/card"
 import StatusButton from "./statusButton"
-import DownloadButton from "./downloadButton"
 import { useTokenStore } from "@renderer/stores/tokenStore"
+import { DownloadMenu } from "@renderer/components/download-menu"
 
 type playlistArgs = {
     index: number
@@ -10,25 +10,6 @@ type playlistArgs = {
 }
 
 export default function Playlist({ index, playlist }: playlistArgs){
-    const { token } = useTokenStore();
-
-    async function startBackup(){
-        if(playlist.tracks.total < 1){ return }
-
-        const res = await fetch(playlist.tracks.href, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
-        });
-        if (!res.ok) {
-            throw new Error('Failed to fetch playlist contents');
-        }
-
-        const data = await res.json();
-        console.log(data)
-        window.api.startBackup(data);
-
-    }
 
     return(
         <Card className="h-[100px] w-[20rem]]" tabIndex={index} key={index}>
@@ -47,7 +28,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadButton onClick={() => startBackup()}/>
+                    <DownloadMenu playlist={playlist}/>
                 </div>
             </CardHeader>
         </Card>
