@@ -10,25 +10,6 @@ type playlistArgs = {
 }
 
 export default function Playlist({ index, playlist }: playlistArgs){
-    const { token } = useTokenStore();
-
-    async function startBackup(){
-        if(playlist.tracks.total < 1){ return }
-
-        const res = await fetch(playlist.tracks.href, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            },
-        });
-        if (!res.ok) {
-            throw new Error('Failed to fetch playlist contents');
-        }
-
-        const data = await res.json();
-        console.log(data)
-        window.api.startBackup(data);
-
-    }
 
     return(
         <Card className="h-[100px] w-[20rem]]" tabIndex={index} key={index}>
@@ -47,7 +28,7 @@ export default function Playlist({ index, playlist }: playlistArgs){
                         </CardTitle>
                         <StatusButton />
                     </div>
-                    <DownloadMenu onClick={() => startBackup()}/>
+                    <DownloadMenu playlist={playlist}/>
                 </div>
             </CardHeader>
         </Card>
