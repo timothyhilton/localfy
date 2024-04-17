@@ -11,7 +11,7 @@ import {
   SheetTrigger
 } from '@renderer/components/ui/sheet'
 import DownloadButton from '@renderer/components/playlist/downloadButton'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import PlaylistType from '@renderer/types/PlaylistType'
 import { useTokenStore } from '@renderer/stores/tokenStore'
 
@@ -37,6 +37,14 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
     console.log(data)
     window.api.startBackup(data)
   }
+
+  useEffect(() => {
+    const handleLog = (message: string): void => {
+      console.log(message)
+    }
+
+    window.api.onDownloadLog(handleLog)
+  }, [])
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
