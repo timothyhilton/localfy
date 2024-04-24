@@ -1,9 +1,11 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
 import SpotifyTrackListResType from './types/SpotifyTrackListResType'
+import settings from 'electron-settings';
+import BackupHelperType from './types/BackupHelperType'
 
 let mainWindow: BrowserWindow
 
@@ -61,12 +63,22 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  ipcMain.on('startBackup', (_event, tracks: SpotifyTrackListResType) => {
-    startBackup(tracks, mainWindow)
+  ipcMain.on('startBackup', (_event, data: BackupHelperType) => {
+    startBackup(data.spotifyTrackListRes, data.playlistName, mainWindow)
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
     shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
+  })
+
+  ipcMain.handle('changeDirectory', async () => {
+    const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+    if(directory.filePaths){ settings.set('directory', directory.filePaths[0]) }
+    return directory.filePaths[0]
+  })
+
+  ipcMain.handle('getDirectory', async() => {
+    return await settings.get('directory')
   })
 
   createWindow()

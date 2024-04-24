@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTokenStore } from '@renderer/stores/tokenStore';
 import PlaylistList from '@renderer/components/playlist/playlistList';
+import Settings from './components/settings/settings';
 
 interface userInfo {
     display_name: string;
@@ -35,6 +36,7 @@ export default function HomePage() {
         <div className="flex flex-col">
             <h1 className="text-4xl font-bold mx-auto my-[3rem]">Welcome back, {user?.display_name}</h1>
             <PlaylistList />
+            <Settings />
         </div>
     )
 }

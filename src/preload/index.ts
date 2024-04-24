@@ -1,14 +1,22 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import BackupHelperType from '../main/types/BackupHelperType'
 
 // Custom APIs for renderer
 const api = {
+  // renderer -> main
+  startBackup: (data: BackupHelperType) => ipcRenderer.send('startBackup', data),
   startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
-  onSetToken: (callback: Function) =>
-    ipcRenderer.on('set-token', (_event, token: string) => callback(token)),
+  
+  // main -> renderer
   onDownloadLog: (callback: Function) =>
     ipcRenderer.on('send-download-log', (_event, data: { message: string, progress?: number }) => callback(data)),
-  startBackup: (playlistId: string) => ipcRenderer.send('startBackup', playlistId)
+  onSetToken: (callback: Function) =>
+    ipcRenderer.on('set-token', (_event, token: string) => callback(token)),
+  
+  // renderer -> main -> renderer
+  changeDirectory: () => ipcRenderer.invoke('changeDirectory'),
+  getDirectory: () => ipcRenderer.invoke('getDirectory'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
