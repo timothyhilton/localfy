@@ -10,12 +10,14 @@ import ffprobeStatic from 'ffprobe-static';
 import settings from 'electron-settings'
 import fs from 'fs'
 import path from 'path'
+import ffmetadata from 'ffmetadata'
 
 const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked');
 const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked');
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
+ffmetadata.setFfmpegPath(ffmpegPath);
 
 export default async function startBackup(
   tracks: SpotifyTrackResType,
@@ -44,8 +46,10 @@ export default async function startBackup(
   let rawProgress = 0
   tracks.items.forEach(async (item) => {
     let artistsString = ''
-    item.track.artists.forEach((a) => (artistsString += a.name + ' '))
-    const searchQuery = `${artistsString}${item.track.name} official audio`
+    item.track.artists.forEach((a) => (artistsString += a.name + ', '))
+    artistsString = artistsString.substring(0, artistsString.length - 2)
+
+    const searchQuery = `${artistsString} ${item.track.name} official audio`
     // todo: make the above more elegant
 
     logToRenderer(`Searching for: ${searchQuery}`)
@@ -54,15 +58,35 @@ export default async function startBackup(
 
     logToRenderer(`Attempting to download ${videoUrl}`)
 
-    const stream = ytdl(videoUrl, {
+    const audioStream = ytdl(videoUrl, {
       quality: 'highestaudio'
     })
+    const albumCoverUrl = item.track.album.images[0].url
+    // todo: error handling for the above
 
     const start = Date.now()
 
-    ffmpeg(stream)
+    const songPath = `${finalDir}/${item.track.name}.mp3`.replace('/[<>:"\/\\|?*\x00-\x1F]/g', '')
+
+    ffmpeg()
+      .input(audioStream)
+      .input(albumCoverUrl)
+      .complexFilter([
+        {
+          filter: 'scale',
+          options: '300:300',
+          inputs: '[1:v]',
+          outputs: 'cover_scaled',
+        },
+      ])
+      .outputOptions('-map', '0:a') // Ensure audio stream is mapped
+      .outputOptions('-map', '[cover_scaled]') // Ensure mapped output from scale filter
+      .outputOptions('-metadata', `title=${item.track.name}`)
+      .outputOptions('-metadata', `album=${item.track.album.name}`)
+      .outputOptions('-metadata', `artist=${artistsString}`)
+      .outputOptions('-metadata', `encoded_by=${item.track.id}`)
       .audioBitrate(128)
-      .save(`${finalDir}/${item.track.name}.mp3`)
+      .save(songPath)
       .on('progress', (p) => {
         readline.cursorTo(process.stdout, 0)
         process.stdout.write(`${p.targetSize}kb downloaded`)

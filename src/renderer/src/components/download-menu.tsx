@@ -45,12 +45,12 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
 
   useEffect(() => {
     const handleLog = (data: {message: string, progress?: number}): void => {
-      if(open){
+      //if(open){
         console.log(data.message)
         setLogMessages(logMessages => [...new Set([...logMessages, data.message])])
         //todo: find the real cause of the duplicate logs instead of just filtering them out
         if(data.progress) {setProgress(data.progress)}
-      }
+      //}
     }
 
     window.api.onDownloadLog(handleLog)
