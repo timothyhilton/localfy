@@ -1,9 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
 import SpotifyTrackListResType from './types/SpotifyTrackListResType'
+import settings from 'electron-settings';
 
 let mainWindow: BrowserWindow
 
@@ -67,6 +68,14 @@ app.whenReady().then(() => {
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
     shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
+  })
+
+  ipcMain.handle('changeDirectory', async () => {
+    const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
+
+    settings.setSync('directory', directory.filePaths[0])
+    console.log("YAY", directory.filePaths[0])
+    return directory.filePaths[0]
   })
 
   createWindow()
