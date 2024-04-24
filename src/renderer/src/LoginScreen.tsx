@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@renderer/components/ui/form"
 import { CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
+import { ModeToggle } from './components/mode-toggle';
 
 const formSchema = z.object({
   client_id: z.string().min(32, {
@@ -85,6 +86,9 @@ function LoginScreen() {
             </form>
           </Form>
         </CardContent>
+        <div className="fixed top-2 right-2">
+          <ModeToggle />
+        </div>
       </div>
     );
   }

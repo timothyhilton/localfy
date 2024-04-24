@@ -3,15 +3,11 @@ import ReactDOM from 'react-dom/client'
 import LoginScreen from '@renderer/LoginScreen'
 import './globals.css'
 import { ThemeProvider } from '@renderer/components/theme-provider'
-import { ModeToggle } from '@renderer/components/mode-toggle'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>
         <ThemeProvider>
-            {<>
-                <LoginScreen />
-                <ModeToggle />
-            </>}
+            <LoginScreen />
         </ThemeProvider>
     </React.StrictMode>,
 )
