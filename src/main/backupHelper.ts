@@ -5,6 +5,14 @@ import readline from 'readline'
 import SpotifyTrackResType from './types/SpotifyTrackListResType'
 import yts from 'yt-search'
 import { BrowserWindow } from 'electron/main'
+import ffmpegStatic from 'ffmpeg-static';
+import ffprobeStatic from 'ffprobe-static';
+
+const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked');
+const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked');
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
 
 export default async function startBackup(
   tracks: SpotifyTrackResType,
