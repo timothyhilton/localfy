@@ -18,9 +18,9 @@ export default async function startBackup(
   tracks: SpotifyTrackResType,
   windowToSendLogsTo: BrowserWindow
 ): Promise<void> {
-  function logToRenderer(message: string): void {
+  function logToRenderer(message: string, progress?: number): void {
     console.log(message)
-    windowToSendLogsTo.webContents.send('send-download-log', message)
+    windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress })
   }
 
   logToRenderer(`initiating backup of: ${tracks.href}`)
@@ -30,6 +30,7 @@ export default async function startBackup(
     logToRenderer('cancelled')
   }
 
+  let rawProgress = 0
   tracks.items.forEach(async (item) => {
     let artistsString = ''
     item.track.artists.forEach((a) => (artistsString += a.name + ' '))
@@ -57,7 +58,8 @@ export default async function startBackup(
         // todo: make the above 2 lines compatible with the log to renderer thing
       })
       .on('end', () => {
-        logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`)
+        rawProgress += 1
+        logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / tracks.items.length) * 100)
       })
   })
 }

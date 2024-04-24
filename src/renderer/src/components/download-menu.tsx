@@ -16,11 +16,13 @@ import PlaylistType from '@renderer/types/PlaylistType'
 import { useTokenStore } from '@renderer/stores/tokenStore'
 import { ScrollArea } from './ui/scroll-area'
 import { Separator } from './ui/separator'
+import { Progress } from "@renderer/components/ui/progress"
 
 export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Element {
   const { token } = useTokenStore()
   const [open, setOpen] = useState(false)
   const [logMessages, setLogMessages] = useState<String[]>([])
+  const [progress, setProgress] = useState<number>();
 
   async function startBackup(): Promise<void> {
     if (playlist.tracks.total < 1) {
@@ -42,10 +44,13 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
   }
 
   useEffect(() => {
-    const handleLog = (message: string): void => {
-      console.log(message)
-      setLogMessages(logMessages => [...new Set([...logMessages, message])])
+    const handleLog = (data: {message: string, progress?: number}): void => {
+      //if(open === false){ return }
+
+      console.log(data.message)
+      setLogMessages(logMessages => [...new Set([...logMessages, data.message])])
       //todo: find the real cause of the duplicate logs instead of just filtering them out
+      if(data.progress) {setProgress(data.progress)}
     }
 
     window.api.onDownloadLog(handleLog)
@@ -77,6 +82,11 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
             Start backup
           </Button>
         </SheetFooter>
+
+        <div className="rounded-md border p-4">
+          <h4 className="mb-4 text-sm font-medium leading-none">Progress</h4>
+          <Progress className="" value={progress} />
+        </div>
 
         <ScrollArea className="rounded-md border">
           <div className="p-4">

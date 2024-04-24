@@ -5,9 +5,9 @@ import { electronAPI } from '@electron-toolkit/preload'
 const api = {
   startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
   onSetToken: (callback: Function) =>
-    ipcRenderer.on('set-token', (_event, value: string) => callback(value)),
+    ipcRenderer.on('set-token', (_event, token: string) => callback(token)),
   onDownloadLog: (callback: Function) =>
-    ipcRenderer.on('send-download-log', (_event, value: string) => callback(value)),
+    ipcRenderer.on('send-download-log', (_event, data: { message: string, progress?: number }) => callback(data)),
   startBackup: (playlistId: string) => ipcRenderer.send('startBackup', playlistId)
 }
 
