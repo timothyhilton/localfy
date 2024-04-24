@@ -43,17 +43,20 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
     window.api.startBackup({ spotifyTrackListRes: data, playlistName: playlist.name })
   }
 
+  let isThereAlreadyAnEventHandler = false
   useEffect(() => {
-    const handleLog = (data: {message: string, progress?: number}): void => {
-      //if(open){
-        console.log(data.message)
-        setLogMessages(logMessages => [...new Set([...logMessages, data.message])])
-        //todo: find the real cause of the duplicate logs instead of just filtering them out
-        if(data.progress) {setProgress(data.progress)}
-      //}
+    const handleLog = (data: { message: string, progress?: number, playlistName: string }): void => {
+      if(data.playlistName != playlist.name) { return }
+
+      console.log(data.message)
+      setLogMessages(logMessages => [...logMessages, data.message])
+      if(data.progress) {setProgress(data.progress)}
     }
 
-    window.api.onDownloadLog(handleLog)
+    if(!isThereAlreadyAnEventHandler){ 
+      window.api.onDownloadLog(handleLog)
+      isThereAlreadyAnEventHandler = true
+    }
   }, [])
 
   return (
@@ -88,19 +91,20 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
           <Progress className="" value={progress} />
         </div>
 
-        <ScrollArea className="rounded-md border">
-          <div className="p-4">
+        
+          <div className="p-4 rounded-md border">
             <h4 className="mb-4 text-sm font-medium leading-none">Logs</h4>
-            {logMessages.map((message) => (
-              <>
-                <div key={logMessages.indexOf(message)} className="text-xs">
-                  {message}
+            <ScrollArea className="h-[10rem]">
+              {logMessages.slice().reverse().map((message) => (
+                <div key={logMessages.indexOf(message)}>
+                  <div className="text-xs">
+                    {message}
+                  </div>
+                  <Separator className="my-2" />
                 </div>
-                <Separator className="my-2" />
-              </>
-            ))}
+              ))}
+            </ScrollArea>
           </div>
-        </ScrollArea>
       </SheetContent>
     </Sheet>
   )

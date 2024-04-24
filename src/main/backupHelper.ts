@@ -27,7 +27,7 @@ export default async function startBackup(
 
   function logToRenderer(message: string, progress?: number): void {
     console.log(message)
-    windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress })
+    windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress, playlistName: playlistName })
   }
 
   logToRenderer(`initiating backup of: ${tracks.href}`)
