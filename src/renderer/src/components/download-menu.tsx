@@ -39,8 +39,8 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
     }
 
     const data = await res.json()
-    console.log(data)
-    window.api.startBackup(data)
+    console.log({ spotifyTrackListRes: data, playlistName: playlist.name })
+    window.api.startBackup({ spotifyTrackListRes: data, playlistName: playlist.name })
   }
 
   useEffect(() => {
@@ -71,9 +71,9 @@ export function DownloadMenu({ playlist }: { playlist: PlaylistType }): JSX.Elem
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="">
-              Folder name
+              Folder
             </Label>
-            <Input id="name" value="Pedro Duarte" className="col-span-3" />
+            <Input id="name" placeholder="none" className="col-span-3 hover:cursor-default" readOnly/>
           </div>
         </div>
 

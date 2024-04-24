@@ -5,6 +5,7 @@ import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
 import SpotifyTrackListResType from './types/SpotifyTrackListResType'
 import settings from 'electron-settings';
+import BackupHelperType from './types/BackupHelperType'
 
 let mainWindow: BrowserWindow
 
@@ -62,8 +63,8 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-  ipcMain.on('startBackup', (_event, tracks: SpotifyTrackListResType) => {
-    startBackup(tracks, mainWindow)
+  ipcMain.on('startBackup', (_event, data: BackupHelperType) => {
+    startBackup(data.spotifyTrackListRes, data.playlistName, mainWindow)
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
@@ -72,8 +73,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('changeDirectory', async () => {
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
-
-    settings.set('directory', directory.filePaths[0])
+    if(directory.filePaths){ settings.set('directory', directory.filePaths[0]) }
     return directory.filePaths[0]
   })
 

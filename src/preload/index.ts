@@ -1,10 +1,11 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import BackupHelperType from '../main/types/BackupHelperType'
 
 // Custom APIs for renderer
 const api = {
   // renderer -> main
-  startBackup: (playlistId: string) => ipcRenderer.send('startBackup', playlistId),
+  startBackup: (data: BackupHelperType) => ipcRenderer.send('startBackup', data),
   startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
   
   // main -> renderer

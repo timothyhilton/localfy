@@ -52,15 +52,12 @@ export default function Settings(){
             </Label>
             <Input
               value={directory}
+              readOnly
               className="col-span-3 hover:cursor-pointer"
-              type='button'
               onClick={changeDirectory}
             />
           </div>
         </div>
-        <DialogFooter>
-          <Button type="submit">Save changes</Button>
-        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

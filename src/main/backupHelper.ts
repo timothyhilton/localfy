@@ -7,6 +7,9 @@ import yts from 'yt-search'
 import { BrowserWindow } from 'electron/main'
 import ffmpegStatic from 'ffmpeg-static';
 import ffprobeStatic from 'ffprobe-static';
+import settings from 'electron-settings'
+import fs from 'fs'
+import path from 'path'
 
 const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked');
 const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked');
@@ -16,8 +19,10 @@ ffmpeg.setFfprobePath(ffprobePath);
 
 export default async function startBackup(
   tracks: SpotifyTrackResType,
+  playlistName: string,
   windowToSendLogsTo: BrowserWindow
 ): Promise<void> {
+
   function logToRenderer(message: string, progress?: number): void {
     console.log(message)
     windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress })
@@ -25,9 +30,15 @@ export default async function startBackup(
 
   logToRenderer(`initiating backup of: ${tracks.href}`)
 
-  const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
-  if (directory.canceled) {
-    logToRenderer('cancelled')
+  const directory: string = (await settings.getSync('directory')) as string
+  if(!fs.existsSync(directory)) {
+    logToRenderer("Error: Directory doesn't exist")
+    return
+  }
+
+  const finalDir = path.join(directory, playlistName)
+  if (!fs.existsSync(finalDir)){
+    fs.mkdirSync(finalDir);
   }
 
   let rawProgress = 0
@@ -51,7 +62,7 @@ export default async function startBackup(
 
     ffmpeg(stream)
       .audioBitrate(128)
-      .save(`${directory.filePaths[0]}/${item.track.name}.mp3`)
+      .save(`${finalDir}/${item.track.name}.mp3`)
       .on('progress', (p) => {
         readline.cursorTo(process.stdout, 0)
         process.stdout.write(`${p.targetSize}kb downloaded`)

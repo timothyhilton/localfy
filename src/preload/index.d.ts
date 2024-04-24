@@ -3,8 +3,7 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 export interface IElectronAPI {
   // renderer -> main
   startAuthFlow: (client_id: string) => void
-  startBackup: (playlistId: string) => void
-  
+  startBackup: (data: BackupHelperType) => void
 
   // main -> renderer
   onSetToken: (callback: Function) => string
