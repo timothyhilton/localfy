@@ -15,6 +15,7 @@ const api = {
   
   // renderer -> main -> renderer
   changeDirectory: () => ipcRenderer.invoke('changeDirectory'),
+  getDirectory: () => ipcRenderer.invoke('getDirectory'),
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

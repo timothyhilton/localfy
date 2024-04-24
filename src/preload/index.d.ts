@@ -12,6 +12,7 @@ export interface IElectronAPI {
 
   // renderer -> main -> renderer
   changeDirectory: () => Promise<string>
+  getDirectory: () => Promise<string>
 }
 
 declare global {

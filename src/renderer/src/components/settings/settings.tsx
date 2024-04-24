@@ -10,10 +10,15 @@ import {
 import { Input } from "@renderer/components/ui/input"
 import { Label } from "@renderer/components/ui/label"
 import { ModeToggle } from "../mode-toggle"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export default function Settings(){
   const [directory, setDirectory] = useState<string>()
+
+  useEffect(() => {
+    window.api.getDirectory()
+      .then(setDirectory)
+  }, []);
 
   function changeDirectory(){
     window.api.changeDirectory()

@@ -73,9 +73,12 @@ app.whenReady().then(() => {
   ipcMain.handle('changeDirectory', async () => {
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
 
-    settings.setSync('directory', directory.filePaths[0])
-    console.log("YAY", directory.filePaths[0])
+    settings.set('directory', directory.filePaths[0])
     return directory.filePaths[0]
+  })
+
+  ipcMain.handle('getDirectory', async() => {
+    return await settings.get('directory')
   })
 
   createWindow()
