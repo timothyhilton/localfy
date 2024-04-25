@@ -1,6 +1,6 @@
 export default interface SpotifyTrackListResType{
     href: string;
-    items: [ // which are songs
+    items: [ // which are individual songs
         {
             track: {
                 name: string,
@@ -8,7 +8,16 @@ export default interface SpotifyTrackListResType{
                     {
                         name: string
                     }
-                ]
+                ],
+                album: {
+                    name: string,
+                    images: [
+                        {
+                            url: string
+                        }
+                    ]
+                },
+                id: string
             }
         }
     ]
