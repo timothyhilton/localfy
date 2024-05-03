@@ -4,6 +4,7 @@ export interface IElectronAPI {
   // renderer -> main
   startAuthFlow: (client_id: string) => void
   startBackup: (data: BackupHelperType) => void
+  setSetting: (data: { setting: string, value: any }) => void
 
   // main -> renderer
   onSetToken: (callback: Function) => string
@@ -12,6 +13,7 @@ export interface IElectronAPI {
   // renderer -> main -> renderer
   changeDirectory: () => Promise<string>
   getDirectory: () => Promise<string>
+  getSetting: (setting: string) => Promise<any>
 }
 
 declare global {

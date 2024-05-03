@@ -6,6 +6,8 @@ import startBackup from './backupHelper'
 import SpotifyTrackListResType from './types/SpotifyTrackListResType'
 import settings from 'electron-settings';
 import BackupHelperType from './types/BackupHelperType'
+import defaultSettingsValues from '../../resources/defaultSettingsValues.json'
+import fs from 'fs'
 
 let mainWindow: BrowserWindow
 
@@ -79,6 +81,15 @@ app.whenReady().then(() => {
 
   ipcMain.handle('getDirectory', async() => {
     return await settings.get('directory')
+  })
+
+  ipcMain.handle('getSetting', (_event, setting: string) => {
+    if(settings.getSync(setting) == undefined){
+      settings.setSync(defaultSettingsValues[setting])
+      console.log("SIGGMMGA", defaultSettingsValues)
+    }
+    console.log(totorial tutorial)
+    return settings.getSync(setting)
   })
 
   createWindow()

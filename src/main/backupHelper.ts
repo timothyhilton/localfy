@@ -47,14 +47,20 @@ export default async function startBackup(
   // find paths of all files in playlist directory, then find the spotify id of the file from the metadata
   let existingSongIds: string[] = []
   await Promise.all(files.map(async fileName => {
-    // find spotify id of song from metadata
-    const metadata = await mm.parseFile(path.join(finalDir, fileName))
-
+    if(!fileName.endsWith(".mp3")){ return }
+    
+    let metadata: mm.IAudioMetadata
+    try {
+      metadata = await mm.parseFile(path.join(finalDir, fileName))
+    } catch(e) {
+      return
+    }
+    
     const txxxCommentObj = metadata.native["ID3v2.4"]
       .find(item => item.id == "TXXX:comment")
 
     if (!txxxCommentObj) {
-      console.log("TXXX.comment not found in metadata.")
+      logToRenderer("TXXX.comment not found in metadata.")
       return;
     }
 
@@ -64,14 +70,12 @@ export default async function startBackup(
     existingSongIds.push(filteredComment)
   }));
 
-  console.log("existing", existingSongIds)
   // filter out any track that has already been downloaded
   const filteredTracks = tracks.items
     .filter(item => !(existingSongIds.includes(item.track.id)))
 
   let rawProgress = 0
   filteredTracks.forEach(async (item) => {
-    console.log("track", item.track.id)
     let artistsString = ''
     item.track.artists.forEach((a) => (artistsString += a.name + ', '))
     artistsString = artistsString.substring(0, artistsString.length - 2)
@@ -95,34 +99,43 @@ export default async function startBackup(
 
     const songPath = `${finalDir}/${item.track.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`;
 
-    ffmpeg()
+    const ffmpegCommand = ffmpeg()
       .input(audioStream)
-      .input(albumCoverUrl)
-      .complexFilter([
-        {
-          filter: 'scale',
-          options: '300:300',
-          inputs: '[1:v]',
-          outputs: 'cover_scaled',
-        },
-      ])
       .outputOptions('-map', '0:a')
-      .outputOptions('-map', '[cover_scaled]')
+      .audioBitrate(128)
+      .output(songPath)
+      .on('progress', (p) => {
+        readline.cursorTo(process.stdout, 0);
+        process.stdout.write(`${p.targetSize}kb downloaded`);
+        // todo: make the above 2 lines compatible with the log to renderer thing
+      })
+      .on('end', () => {
+        rawProgress += 1;
+        logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / filteredTracks.length) * 100);
+      });
+    
+    const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
+    if (saveCoverArt) {
+      ffmpegCommand
+        .input(albumCoverUrl)
+        .complexFilter([
+          {
+            filter: 'scale',
+            options: '300:300',
+            inputs: '[1:v]',
+            outputs: 'cover_scaled',
+          },
+        ])
+        .outputOptions('-map', '[cover_scaled]');
+    }
+
+    ffmpegCommand
       .outputOptions('-metadata', `title=${item.track.name}`)
       .outputOptions('-metadata', `album=${item.track.album.name}`)
       .outputOptions('-metadata', `artist=${artistsString}`)
       //.outputOptions('-metadata', `album_artist=${item.track.album.artists[0].name}`)
       .outputOptions('-metadata', `comment=${item.track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
-      .audioBitrate(128)
-      .save(songPath)
-      .on('progress', (p) => {
-        readline.cursorTo(process.stdout, 0)
-        process.stdout.write(`${p.targetSize}kb downloaded`)
-        // todo: make the above 2 lines compatible with the log to renderer thing
-      })
-      .on('end', () => {
-        rawProgress += 1
-        logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / filteredTracks.length) * 100)
-      })
+      .save(songPath);
+
   })
 }

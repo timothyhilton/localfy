@@ -7,6 +7,7 @@ const api = {
   // renderer -> main
   startBackup: (data: BackupHelperType) => ipcRenderer.send('startBackup', data),
   startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
+  setSetting: (data: { setting: string, value: any }) => ipcRenderer.send('setSetting', data),
   
   // main -> renderer
   onDownloadLog: (callback: Function) =>
@@ -17,6 +18,7 @@ const api = {
   // renderer -> main -> renderer
   changeDirectory: () => ipcRenderer.invoke('changeDirectory'),
   getDirectory: () => ipcRenderer.invoke('getDirectory'),
+  getSetting: (setting: string) => ipcRenderer.invoke('getSetting', setting)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
