@@ -83,13 +83,17 @@ app.whenReady().then(() => {
     return await settings.get('directory')
   })
 
-  ipcMain.handle('getSetting', (_event, setting: string) => {
-    if(settings.getSync(setting) == undefined){
-      settings.setSync(defaultSettingsValues[setting])
-      console.log("SIGGMMGA", defaultSettingsValues)
+  ipcMain.handle('getSetting', async(_event, setting: string) => {
+    // finds default value if setting has never been set/got before
+    if(!(await settings.has(setting))){
+      await settings.set(setting, defaultSettingsValues[setting])
     }
-    console.log(totorial tutorial)
-    return settings.getSync(setting)
+
+    return await settings.get(setting)
+  })
+
+  ipcMain.on('setSetting', (_event, data: { setting: string, value: any}) => {
+    settings.set(data.setting, data.value)
   })
 
   createWindow()

@@ -11,7 +11,7 @@ import { Input } from "@renderer/components/ui/input"
 import { Label } from "@renderer/components/ui/label"
 import { ModeToggle } from "../mode-toggle"
 import { useEffect, useState } from "react"
-import SettingsCheckbox from "../ui/settings-checkbox"
+import SettingsCheckbox from "./settings-checkbox"
 
 export default function Settings(){
   const [directory, setDirectory] = useState<string>()
@@ -45,7 +45,7 @@ export default function Settings(){
             <Label htmlFor="theme" className="text-right">
               Save Album Cover
             </Label>
-            <SettingsCheckbox setting="saveCoverArt" defaultValue={true} />
+            <SettingsCheckbox setting="saveCoverArt"/>
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="theme" className="text-right">
