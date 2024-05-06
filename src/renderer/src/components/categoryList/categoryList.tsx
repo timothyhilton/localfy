@@ -31,6 +31,13 @@ export default function CategoryList(){
   }, [token])
 
   return (
-    <PlaylistList playlists={playlists}/>
+    <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">
+      <AccordionItem value="item-1">
+        <AccordionTrigger>Playlists</AccordionTrigger>
+        <AccordionContent>
+          <PlaylistList playlists={playlists}/>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
   )
 }

@@ -12,7 +12,7 @@ type playlistArgs = {
 export default function Playlist({ index, playlist }: playlistArgs){
 
     return(
-        <Card className="h-[100px] w-[20rem]]" tabIndex={index} key={index}>
+        <Card className="h-[100px] w-[20rem]] bg-slate-100 dark:bg-slate-950" tabIndex={index} key={index}>
             <CardHeader>
                 <div className="flex flex-row">
                     
