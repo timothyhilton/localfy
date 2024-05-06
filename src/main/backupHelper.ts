@@ -19,21 +19,6 @@ ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 ffmetadata.setFfmpegPath(ffmpegPath);
 
-function getDirectory(playlistName: string, logger: Function) {
-  const directory: string = settings.getSync('directory') as string
-  if(!fs.existsSync(directory)) {
-    logger("Error: Directory doesn't exist")
-    return
-  }
-
-  const finalDir = path.join(directory, playlistName)
-  if (!fs.existsSync(finalDir)){
-    fs.mkdirSync(finalDir);
-  }
-
-  return finalDir
-}
-
 export default async function startBackup(
   tracks: SpotifyTrackResType,
   playlistName: string,
@@ -47,11 +32,38 @@ export default async function startBackup(
 
   logToRenderer(`initiating backup of: ${tracks.href}`)
 
-  const directory = getDirectory(playlistName, logToRenderer)
-  if(!directory) return
-  const files = await fs.promises.readdir(directory);
+  const directory = getDirectory(playlistName)
+  if(!directory) {
+    logToRenderer("Directory doesn't exist")
+    return
+  }
   
-  // find paths of all files in playlist directory, then find the spotify id of the file from the metadata
+  const songIds = await extractSongIdsFromMetadata(directory, logToRenderer)
+
+  // filter out any track that has already been downloaded
+  const filteredTracks = tracks.items
+    .filter(item => !(songIds.includes(item.track.id)))
+
+  downloadSpotifyTrackList(filteredTracks, directory, logToRenderer)
+}
+
+function getDirectory(playlistName: string) {
+  const directory: string = settings.getSync('directory') as string
+  if(!fs.existsSync(directory)) {
+    return
+  }
+
+  const finalDir = path.join(directory, playlistName)
+  if (!fs.existsSync(finalDir)){
+    fs.mkdirSync(finalDir);
+  }
+
+  return finalDir
+}
+
+async function extractSongIdsFromMetadata(directory: string, logger: Function){
+  const files = await fs.promises.readdir(directory);
+
   let existingSongIds: string[] = []
   await Promise.all(files.map(async fileName => {
     if(!fileName.endsWith(".mp3")){ return }
@@ -67,22 +79,22 @@ export default async function startBackup(
       .find(item => item.id == "TXXX:comment")
 
     if (!txxxCommentObj) {
-      logToRenderer("TXXX.comment not found in metadata.")
+      logger("TXXX.comment not found in metadata.")
       return;
     }
 
     const txxxComment: string = txxxCommentObj.value
     const filteredComment = txxxComment.split(' WARNING: ')[0]
-    console.log("filtered", filteredComment)
     existingSongIds.push(filteredComment)
+    logger(`filtered ${filteredComment}`)
   }));
 
-  // filter out any track that has already been downloaded
-  const filteredTracks = tracks.items
-    .filter(item => !(existingSongIds.includes(item.track.id)))
+  return existingSongIds
+}
 
+function downloadSpotifyTrackList(trackList, directory: string, logger: Function) {
   let rawProgress = 0
-  filteredTracks.forEach(async (item) => {
+  trackList.forEach(async (item) => {
     let artistsString = ''
     item.track.artists.forEach((a) => (artistsString += a.name + ', '))
     artistsString = artistsString.substring(0, artistsString.length - 2)
@@ -90,11 +102,11 @@ export default async function startBackup(
     const searchQuery = `${artistsString} ${item.track.name} official audio`
     // todo: make the above more elegant
 
-    logToRenderer(`Searching for: ${searchQuery}`)
+    logger(`Searching for: ${searchQuery}`)
 
     const videoUrl = (await yts(searchQuery)).videos[0].url
 
-    logToRenderer(`Attempting to download ${videoUrl}`)
+    logger(`Attempting to download ${videoUrl}`)
 
     const audioStream = ytdl(videoUrl, {
       quality: 'highestaudio'
@@ -108,6 +120,7 @@ export default async function startBackup(
     
     const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
     
+    // todo: make this more concise
     if(saveCoverArt) {
       ffmpeg()
         .input(audioStream)
@@ -136,7 +149,7 @@ export default async function startBackup(
         })
         .on('end', () => {
           rawProgress += 1
-          logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / filteredTracks.length) * 100)
+          logger(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
         })
     } else {
       ffmpeg()
@@ -155,7 +168,7 @@ export default async function startBackup(
         })
         .on('end', () => {
           rawProgress += 1
-          logToRenderer(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / filteredTracks.length) * 100)
+          logger(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
         })
     }
   })
