@@ -11,7 +11,7 @@ const api = {
   
   // main -> renderer
   onDownloadLog: (callback: Function) =>
-    ipcRenderer.on('send-download-log', (_event, data: { message: string, progress?: number, playlistName: string }) => callback(data)),
+    ipcRenderer.on('send-download-log', (_event, data: { message: string, progress?: number, folderName: string }) => callback(data)),
   onSetToken: (callback: Function) =>
     ipcRenderer.on('set-token', (_event, token: string) => callback(token)),
   

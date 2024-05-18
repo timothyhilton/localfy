@@ -66,7 +66,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('startBackup', (_event, data: BackupHelperType) => {
-    startBackup(data.spotifyTrackListRes, data.playlistName, mainWindow)
+    startBackup(data.tracks, data.folderName, mainWindow)
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {

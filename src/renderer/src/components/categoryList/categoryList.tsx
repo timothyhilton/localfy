@@ -1,5 +1,4 @@
 import { useTokenStore } from "@renderer/stores/tokenStore";
-import PlaylistType from "@renderer/types/PlaylistType";
 import { useEffect, useState } from "react";
 import PlaylistList from "../playlist/playlistList";
 import {
@@ -8,63 +7,67 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@renderer/components/ui/accordion"
+import { TrackContainer } from "@renderer/types/Tracks";
 
 export default function CategoryList(){
   const { token } = useTokenStore();
-  const [playlists, setPlaylists] = useState<PlaylistType[]>([]);
-  const [savedAlbums, setSavedAlbums] = useState<PlaylistType[]>([]);
+  const [playlists, setPlaylists] = useState<TrackContainer[]>([]);
+  const [savedAlbums, setSavedAlbums] = useState<TrackContainer[]>([]);
 
   useEffect(() => {
-    async function fetchPlaylists(){
+    async function fetchPlaylists() {
       const res = await fetch('https://api.spotify.com/v1/me/playlists', {
         headers: {
-        Authorization: `Bearer ${token}`,
-      }})
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) {
         throw new Error('Failed to fetch playlists');
       }
       const data = await res.json();
-
-      setPlaylists(data.items)
+  
+      const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
+        name: playlist.name,
+        id: playlist.id,
+        type: 'playlist',
+        imageUrl: playlist.images[0]?.url || '',
+        trackListHref: playlist.tracks.href,
+        trackCount: playlist.tracks.total,
+      }));
+  
+      setPlaylists(mappedPlaylists);
     }
-
+  
     fetchPlaylists();
-  }, [token])
+  }, [token]);
 
   useEffect(() => {
-    async function fetchSavedAlbums(){
-      console.log(token)
+    async function fetchSavedAlbums() {
+      console.log(token);
       const res = await fetch('https://api.spotify.com/v1/me/albums', {
         headers: {
-        Authorization: `Bearer ${token}`,
-      }})
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) {
         throw new Error('Failed to fetch albums');
       }
       const data = await res.json();
-
-      function mapApiResponse(apiResponse) {
-        return apiResponse.items.map(item => {
-          return {
-            name: item.album.name,
-            images: item.album.images.map(image => ({ url: image.url })),
-            description: "",
-            id: item.album.id,
-            tracks: {
-              href: item.album.tracks.href,
-              total: item.album.tracks.total
-            }
-          }
-        })
-      }
-      
-      const mappedResponse = mapApiResponse(data)
-
-      setSavedAlbums(mappedResponse)
+  
+      const mappedAlbums: TrackContainer[] = data.items.map((item: any) => ({
+        name: item.album.name,
+        id: item.album.id,
+        type: 'album',
+        imageUrl: item.album.images[0]?.url || '',
+        trackListHref: item.album.tracks.href,
+        trackCount: item.album.total_tracks,
+      }));
+  
+      setSavedAlbums(mappedAlbums);
     }
-
+  
     fetchSavedAlbums();
-  }, [token])
+  }, [token]);
 
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">

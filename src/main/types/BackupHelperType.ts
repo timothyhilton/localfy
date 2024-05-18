@@ -1,6 +1,7 @@
-import SpotifyTrackListResType from "./SpotifyTrackListResType";
+import Track from "./Tracks";
 
 export default interface BackupHelperType {
-    spotifyTrackListRes: SpotifyTrackListResType;
-    playlistName: string
+    tracks: Track[],
+    folderName: string
 }
+
