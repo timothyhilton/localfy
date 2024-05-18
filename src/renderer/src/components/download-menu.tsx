@@ -10,9 +10,8 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@renderer/components/ui/sheet'
-import DownloadButton from '@renderer/components/playlist/downloadButton'
+import DownloadButton from '@renderer/components/trackContainer/downloadButton'
 import { useEffect, useState } from 'react'
-import PlaylistType from '@renderer/types/PlaylistType'
 import { useTokenStore } from '@renderer/stores/tokenStore'
 import { ScrollArea } from './ui/scroll-area'
 import { Separator } from './ui/separator'

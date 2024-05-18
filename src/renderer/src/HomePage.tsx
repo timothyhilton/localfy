@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useTokenStore } from '@renderer/stores/tokenStore';
-import PlaylistList from '@renderer/components/playlist/playlistList';
+import PlaylistList from '@renderer/components/trackContainer/trackContainerList';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 

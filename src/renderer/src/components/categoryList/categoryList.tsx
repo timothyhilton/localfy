@@ -1,6 +1,6 @@
 import { useTokenStore } from "@renderer/stores/tokenStore";
 import { useEffect, useState } from "react";
-import PlaylistList from "../playlist/playlistList";
+import PlaylistList from "../trackContainer/trackContainerList";
 import {
   Accordion,
   AccordionContent,
@@ -8,6 +8,7 @@ import {
   AccordionTrigger,
 } from "@renderer/components/ui/accordion"
 import { TrackContainer } from "@renderer/types/Tracks";
+import TrackContainerList from "../trackContainer/trackContainerList";
 
 export default function CategoryList(){
   const { token } = useTokenStore();
@@ -74,13 +75,13 @@ export default function CategoryList(){
       <AccordionItem value="item-1">
         <AccordionTrigger>Playlists</AccordionTrigger>
         <AccordionContent>
-          <PlaylistList playlists={playlists}/>
+          <TrackContainerList trackContainers={playlists}/>
         </AccordionContent>
       </AccordionItem>
       <AccordionItem value="item-2">
         <AccordionTrigger>Saved Albums</AccordionTrigger>
         <AccordionContent>
-          <PlaylistList playlists={savedAlbums}/>
+          <TrackContainerList trackContainers={savedAlbums}/>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
