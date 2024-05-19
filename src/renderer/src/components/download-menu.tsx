@@ -57,8 +57,7 @@ export function DownloadMenu({ trackContainer }: { trackContainer: TrackContaine
                 coverArtUrl: track.album.images[0]?.url || '',
             };
         });
-        console.log("MAPPEDPLAYLISTTRACKS", mappedTracks)
-        window.api.startBackup({ mappedTracks, folderName: trackContainer.name });
+        window.api.startBackup({ tracks: mappedTracks, folderName: trackContainer.name });
       } catch (error) {
         console.error('Error fetching tracks for playlist:', error)
       }
@@ -70,7 +69,6 @@ export function DownloadMenu({ trackContainer }: { trackContainer: TrackContaine
     const handleLog = (data: { message: string, progress?: number, folderName: string }): void => {
       if(data.folderName != trackContainer.name) { return }
 
-      console.log(data.message)
       setLogMessages(logMessages => [...logMessages, data.message])
       if(data.progress) {setProgress(data.progress)}
     }

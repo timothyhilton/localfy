@@ -26,8 +26,6 @@ export default function CategoryList(){
         throw new Error('Failed to fetch playlists');
       }
       const data = await res.json();
-
-      console.log('PLAYLIST', data)
   
       const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
         name: playlist.name,
@@ -46,7 +44,6 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchSavedAlbums() {
-      console.log(token);
       const res = await fetch('https://api.spotify.com/v1/me/albums', {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -56,8 +53,6 @@ export default function CategoryList(){
         throw new Error('Failed to fetch albums');
       }
       const data = await res.json();
-
-      console.log("ALBUMS", data)
   
       const mappedAlbums: TrackContainer[] = data.items.map((item: any) => {
         const mappedTracks: Track[] = item.album.tracks.items.map((track: any) => ({
@@ -76,10 +71,8 @@ export default function CategoryList(){
           trackListHref: item.album.tracks.href,
           trackCount: item.album.total_tracks,
           tracks: mappedTracks,
-        };
-      });
-
-      console.log("MAPPED ALBUMS", mappedAlbums)
+        }
+      })
   
       setSavedAlbums(mappedAlbums);
     }

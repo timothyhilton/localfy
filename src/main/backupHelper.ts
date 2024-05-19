@@ -39,9 +39,7 @@ export default async function startBackup(
   }
   
   const songIds = await extractSongIdsFromMetadata(directory, logToRenderer)
-  console.log("SONGIDS", songIds)
-
-  console.log(tracks[0])
+  
   // filter out any track that has already been downloaded
   const filteredTracks = tracks.filter(track => !(songIds.includes(track.id)))
 
