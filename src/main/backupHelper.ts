@@ -1,59 +1,58 @@
 import ytdl from 'ytdl-core'
 import ffmpeg from 'fluent-ffmpeg'
-import readline from 'readline'
-import SpotifyTrackResType from './types/SpotifyTrackListResType'
 import yts from 'yt-search'
 import { BrowserWindow } from 'electron/main'
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
-import settings, { file } from 'electron-settings'
+import ffmpegStatic from 'ffmpeg-static'
+import ffprobeStatic from 'ffprobe-static'
+import settings from 'electron-settings'
 import fs from 'fs'
 import path from 'path'
 import ffmetadata from 'ffmetadata'
-import * as mm from 'music-metadata';
+import * as mm from 'music-metadata'
+import Track from './types/Tracks'
+import readline from 'readline'
 
-const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked');
-const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked');
+const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked')
+const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked')
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
 ffmetadata.setFfmpegPath(ffmpegPath);
 
 export default async function startBackup(
-  tracks: SpotifyTrackResType,
-  playlistName: string,
+  tracks: Track[],
+  folderName: string,
   windowToSendLogsTo: BrowserWindow
 ): Promise<void> {
 
   function logToRenderer(message: string, progress?: number): void {
     console.log(message)
-    windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress, playlistName: playlistName })
+    windowToSendLogsTo.webContents.send('send-download-log', { message: message, progress: progress, folderName: folderName })
   }
 
-  logToRenderer(`initiating backup of: ${tracks.href}`)
+  logToRenderer(`initiating backup of playlist: ${folderName}`)
 
-  const directory = getDirectory(playlistName)
+  const directory = getDirectory(folderName)
   if(!directory) {
     logToRenderer("Directory doesn't exist")
     return
   }
   
   const songIds = await extractSongIdsFromMetadata(directory, logToRenderer)
-
+  
   // filter out any track that has already been downloaded
-  const filteredTracks = tracks.items
-    .filter(item => !(songIds.includes(item.track.id)))
+  const filteredTracks = tracks.filter(track => !(songIds.includes(track.id)))
 
-  downloadSpotifyTrackList(filteredTracks, directory, logToRenderer)
+  await downloadSpotifyTrackList(filteredTracks, directory, logToRenderer)
 }
 
-function getDirectory(playlistName: string) {
+function getDirectory(folderName: string) {
   const directory: string = settings.getSync('directory') as string
   if(!fs.existsSync(directory)) {
     return
   }
 
-  const finalDir = path.join(directory, playlistName)
+  const finalDir = path.join(directory, folderName)
   if (!fs.existsSync(finalDir)){
     fs.mkdirSync(finalDir);
   }
@@ -72,12 +71,13 @@ async function extractSongIdsFromMetadata(directory: string, logger: Function){
     try {
       metadata = await mm.parseFile(path.join(directory, fileName))
     } catch(e) {
+      const error = e as Error
+      logger(`Error parsing metadata for ${fileName}: ${error.message}`)
       return
     }
     
     const txxxCommentObj = metadata.native["ID3v2.4"]
       .find(item => item.id == "TXXX:comment")
-
     if (!txxxCommentObj) {
       logger("TXXX.comment not found in metadata.")
       return;
@@ -92,14 +92,14 @@ async function extractSongIdsFromMetadata(directory: string, logger: Function){
   return existingSongIds
 }
 
-function downloadSpotifyTrackList(trackList, directory: string, logger: Function) {
+function downloadSpotifyTrackList(trackList: Track[], directory: string, logger: Function) {
   let rawProgress = 0
-  trackList.forEach(async (item) => {
+  trackList.forEach(async (track) => {
     let artistsString = ''
-    item.track.artists.forEach((a) => (artistsString += a.name + ', '))
+    track.artists.forEach((artist) => (artistsString += artist + ', '))
     artistsString = artistsString.substring(0, artistsString.length - 2)
 
-    const searchQuery = `${artistsString} ${item.track.name} official audio`
+    const searchQuery = `${artistsString} ${track.name} official audio`
     // todo: make the above more elegant
 
     logger(`Searching for: ${searchQuery}`)
@@ -111,12 +111,12 @@ function downloadSpotifyTrackList(trackList, directory: string, logger: Function
     const audioStream = ytdl(videoUrl, {
       quality: 'highestaudio'
     })
-    const albumCoverUrl = item.track.album.images[0].url
+    const albumCoverUrl = track.coverArtUrl
     // todo: error handling for the above
 
     const start = Date.now()
 
-    const songPath = `${directory}/${item.track.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`;
+    const songPath = `${directory}/${track.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`;
     
     const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
     
@@ -135,11 +135,11 @@ function downloadSpotifyTrackList(trackList, directory: string, logger: Function
         ])
         .outputOptions('-map', '0:a')
         .outputOptions('-map', '[cover_scaled]')
-        .outputOptions('-metadata', `title=${item.track.name}`)
-        .outputOptions('-metadata', `album=${item.track.album.name}`)
+        .outputOptions('-metadata', `title=${track.name}`)
+        .outputOptions('-metadata', `album=${track.album}`)
         .outputOptions('-metadata', `artist=${artistsString}`)
         //.outputOptions('-metadata', `album_artist=${item.track.album.artists[0].name}`)
-        .outputOptions('-metadata', `comment=${item.track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
+        .outputOptions('-metadata', `comment=${track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
         .audioBitrate(128)
         .save(songPath)
         .on('progress', (p) => {
@@ -149,16 +149,16 @@ function downloadSpotifyTrackList(trackList, directory: string, logger: Function
         })
         .on('end', () => {
           rawProgress += 1
-          logger(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
+          logger(`\ndownloaded ${track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
         })
     } else {
       ffmpeg()
         .input(audioStream)
-        .outputOptions('-metadata', `title=${item.track.name}`)
-        .outputOptions('-metadata', `album=${item.track.album.name}`)
+        .outputOptions('-metadata', `title=${track.name}`)
+        .outputOptions('-metadata', `album=${track.album}`)
         .outputOptions('-metadata', `artist=${artistsString}`)
         //.outputOptions('-metadata', `album_artist=${item.track.album.artists[0].name}`)
-        .outputOptions('-metadata', `comment=${item.track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
+        .outputOptions('-metadata', `comment=${track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
         .audioBitrate(128)
         .save(songPath)
         .on('progress', (p) => {
@@ -168,8 +168,9 @@ function downloadSpotifyTrackList(trackList, directory: string, logger: Function
         })
         .on('end', () => {
           rawProgress += 1
-          logger(`\ndownloaded ${item.track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
+          logger(`\ndownloaded ${track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
         })
     }
   })
 }
+

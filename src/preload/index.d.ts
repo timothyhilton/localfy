@@ -8,7 +8,7 @@ export interface IElectronAPI {
 
   // main -> renderer
   onSetToken: (callback: Function) => string
-  onDownloadLog: (callback: Function) => { message: string; progress: number; playlistName: string }
+  onDownloadLog: (callback: Function) => { message: string; progress: number; folderName: string }
 
   // renderer -> main -> renderer
   changeDirectory: () => Promise<string>

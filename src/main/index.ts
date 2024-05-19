@@ -66,16 +66,16 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('startBackup', (_event, data: BackupHelperType) => {
-    startBackup(data.spotifyTrackListRes, data.playlistName, mainWindow)
+    startBackup(data.tracks, data.folderName, mainWindow)
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
-    shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
+    shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
   })
 
   ipcMain.handle('changeDirectory', async () => {
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
-    if(directory.filePaths){ settings.set('directory', directory.filePaths[0]) }
+    if(directory.filePaths[0]){ settings.set('directory', directory.filePaths[0]) }
     return directory.filePaths[0]
   })
 
