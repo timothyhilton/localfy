@@ -3,11 +3,9 @@ import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
-import SpotifyTrackListResType from './types/SpotifyTrackListResType'
-import settings from 'electron-settings';
+import settings from 'electron-settings'
 import BackupHelperType from './types/BackupHelperType'
 import defaultSettingsValues from '../../resources/defaultSettingsValues.json'
-import fs from 'fs'
 
 let mainWindow: BrowserWindow
 
