@@ -1,6 +1,6 @@
 import { useTokenStore } from "@renderer/stores/tokenStore";
 import { useEffect, useState } from "react";
-import PlaylistList from "../trackContainer/trackContainerList";
+import PlaylistList from "../trackContainers/trackContainerList";
 import {
   Accordion,
   AccordionContent,
@@ -8,7 +8,7 @@ import {
   AccordionTrigger,
 } from "@renderer/components/ui/accordion"
 import Track, { TrackContainer } from "@renderer/types/Tracks";
-import TrackContainerList from "../trackContainer/trackContainerList";
+import TrackContainerList from "../trackContainers/trackContainerList";
 
 export default function CategoryList(){
   const { token } = useTokenStore();

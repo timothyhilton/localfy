@@ -10,7 +10,7 @@ import {
   SheetTitle,
   SheetTrigger
 } from '@renderer/components/ui/sheet'
-import DownloadButton from '@renderer/components/trackContainer/downloadButton'
+import DownloadButton from '@renderer/components/trackContainers/downloadButton'
 import { useEffect, useState } from 'react'
 import { useTokenStore } from '@renderer/stores/tokenStore'
 import { ScrollArea } from './ui/scroll-area'
