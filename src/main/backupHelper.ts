@@ -2,17 +2,18 @@ import ytdl from 'ytdl-core'
 import ffmpeg from 'fluent-ffmpeg'
 import yts from 'yt-search'
 import { BrowserWindow } from 'electron/main'
-import ffmpegStatic from 'ffmpeg-static';
-import ffprobeStatic from 'ffprobe-static';
+import ffmpegStatic from 'ffmpeg-static'
+import ffprobeStatic from 'ffprobe-static'
 import settings from 'electron-settings'
 import fs from 'fs'
 import path from 'path'
 import ffmetadata from 'ffmetadata'
-import * as mm from 'music-metadata';
-import Track from './types/Tracks';
+import * as mm from 'music-metadata'
+import Track from './types/Tracks'
+import readline from 'readline'
 
-const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked');
-const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked');
+const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked')
+const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked')
 
 ffmpeg.setFfmpegPath(ffmpegPath);
 ffmpeg.setFfprobePath(ffprobePath);
@@ -38,9 +39,11 @@ export default async function startBackup(
   }
   
   const songIds = await extractSongIdsFromMetadata(directory, logToRenderer)
+  console.log("SONGIDS", songIds)
 
+  console.log(tracks[0])
   // filter out any track that has already been downloaded
-  const filteredTracks = tracks.filter(item => !(songIds.includes(item.id)))
+  const filteredTracks = tracks.filter(track => !(songIds.includes(track.id)))
 
   await downloadSpotifyTrackList(filteredTracks, directory, logToRenderer)
 }
@@ -91,71 +94,85 @@ async function extractSongIdsFromMetadata(directory: string, logger: Function){
   return existingSongIds
 }
 
-async function downloadSpotifyTrackList(trackList: Track[], directory: string, logger: Function) {
+function downloadSpotifyTrackList(trackList: Track[], directory: string, logger: Function) {
   let rawProgress = 0
-  await Promise.all(trackList.map(async (item) => {
-    const artistsString = item.artists.join(', ');
+  trackList.forEach(async (track) => {
+    let artistsString = ''
+    track.artists.forEach((artist) => (artistsString += artist + ', '))
+    artistsString = artistsString.substring(0, artistsString.length - 2)
 
-    const searchQuery = `${artistsString} ${item.name} official audio`
+    const searchQuery = `${artistsString} ${track.name} official audio`
     // todo: make the above more elegant
 
     logger(`Searching for: ${searchQuery}`)
 
-    try {
-      const videoUrl = (await yts(searchQuery)).videos[0].url
-      logger(`Attempting to download ${videoUrl}`)
+    const videoUrl = (await yts(searchQuery)).videos[0].url
 
-      const audioStream = ytdl(videoUrl, {
-        quality: 'highestaudio'
-      })
-      const albumCoverUrl = item.coverArtUrl
-      // todo: error handling for the above
+    logger(`Attempting to download ${videoUrl}`)
 
-      const start = Date.now()
+    const audioStream = ytdl(videoUrl, {
+      quality: 'highestaudio'
+    })
+    const albumCoverUrl = track.coverArtUrl
+    // todo: error handling for the above
 
-      const songPath = `${directory}/${item.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`;
-      
-      const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
-      
-      const ffmpegOptions = [
-        {
-          filter: 'scale',
-          options: '300:300',
-          inputs: '[1:v]',
-          outputs: 'cover_scaled',
-        },
-      ]
+    const start = Date.now()
 
-      const ffmpegCommand = ffmpeg()
+    const songPath = `${directory}/${track.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`;
+    
+    const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
+    
+    // todo: make this more concise
+    if(saveCoverArt) {
+      ffmpeg()
         .input(audioStream)
         .input(albumCoverUrl)
-        .complexFilter(ffmpegOptions)
+        .complexFilter([
+          {
+            filter: 'scale',
+            options: '300:300',
+            inputs: '[1:v]',
+            outputs: 'cover_scaled',
+          },
+        ])
         .outputOptions('-map', '0:a')
         .outputOptions('-map', '[cover_scaled]')
-        .outputOptions('-metadata', `title=${item.name}`)
-        .outputOptions('-metadata', `album=${item.album}`)
+        .outputOptions('-metadata', `title=${track.name}`)
+        .outputOptions('-metadata', `album=${track.album}`)
         .outputOptions('-metadata', `artist=${artistsString}`)
-        //.outputOptions('-metadata', `album_artist=${item.album.artists[0].name}`)
-        .outputOptions('-metadata', `comment=${item.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
+        //.outputOptions('-metadata', `album_artist=${item.track.album.artists[0].name}`)
+        .outputOptions('-metadata', `comment=${track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
         .audioBitrate(128)
         .save(songPath)
         .on('progress', (p) => {
-          logger(`Downloaded ${p.targetSize}kb`)
+          readline.cursorTo(process.stdout, 0)
+          process.stdout.write(`${p.targetSize}kb downloaded`)
+          // todo: make the above 2 lines compatible with the log to renderer thing
         })
         .on('end', () => {
           rawProgress += 1
-          logger(`\ndownloaded ${item.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
+          logger(`\ndownloaded ${track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
         })
-
-      if (saveCoverArt) {
-        ffmpegCommand.input(albumCoverUrl)
-      }
-
-      await ffmpegCommand.run()
-    } catch (e) {
-      const error = e as Error
-      logger(`Error downloading ${item.name}: ${error.message}`)
+    } else {
+      ffmpeg()
+        .input(audioStream)
+        .outputOptions('-metadata', `title=${track.name}`)
+        .outputOptions('-metadata', `album=${track.album}`)
+        .outputOptions('-metadata', `artist=${artistsString}`)
+        //.outputOptions('-metadata', `album_artist=${item.track.album.artists[0].name}`)
+        .outputOptions('-metadata', `comment=${track.id} WARNING: DO NOT CHANGE OR LOCALFY WILL NOT KNOW WHAT SONG THIS IS.`)
+        .audioBitrate(128)
+        .save(songPath)
+        .on('progress', (p) => {
+          readline.cursorTo(process.stdout, 0)
+          process.stdout.write(`${p.targetSize}kb downloaded`)
+          // todo: make the above 2 lines compatible with the log to renderer thing
+        })
+        .on('end', () => {
+          rawProgress += 1
+          logger(`\ndownloaded ${track.name} in ${(Date.now() - start) / 1000}s`, (rawProgress / trackList.length) * 100)
+        })
     }
-  }))
+  })
 }
 

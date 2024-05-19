@@ -13,5 +13,6 @@ export interface TrackContainer {
     imageUrl: string
     trackListHref: string
     trackCount: number
+    tracks: Track[] | null
 }
 

@@ -7,7 +7,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@renderer/components/ui/accordion"
-import { TrackContainer } from "@renderer/types/Tracks";
+import Track, { TrackContainer } from "@renderer/types/Tracks";
 import TrackContainerList from "../trackContainer/trackContainerList";
 
 export default function CategoryList(){
@@ -26,6 +26,8 @@ export default function CategoryList(){
         throw new Error('Failed to fetch playlists');
       }
       const data = await res.json();
+
+      console.log('PLAYLIST', data)
   
       const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
         name: playlist.name,
@@ -54,15 +56,30 @@ export default function CategoryList(){
         throw new Error('Failed to fetch albums');
       }
       const data = await res.json();
+
+      console.log("ALBUMS", data)
   
-      const mappedAlbums: TrackContainer[] = data.items.map((item: any) => ({
-        name: item.album.name,
-        id: item.album.id,
-        type: 'album',
-        imageUrl: item.album.images[0]?.url || '',
-        trackListHref: item.album.tracks.href,
-        trackCount: item.album.total_tracks,
-      }));
+      const mappedAlbums: TrackContainer[] = data.items.map((item: any) => {
+        const mappedTracks: Track[] = item.album.tracks.items.map((track: any) => ({
+          name: track.name,
+          artists: track.artists.map((artist: any) => artist.name),
+          album: item.album.name,
+          id: track.id,
+          coverArtUrl: item.album.images[0]?.url || '',
+        }));
+  
+        return {
+          name: item.album.name,
+          id: item.album.id,
+          type: 'album',
+          imageUrl: item.album.images[0]?.url || '',
+          trackListHref: item.album.tracks.href,
+          trackCount: item.album.total_tracks,
+          tracks: mappedTracks,
+        };
+      });
+
+      console.log("MAPPED ALBUMS", mappedAlbums)
   
       setSavedAlbums(mappedAlbums);
     }
