@@ -35,7 +35,7 @@ export default function HomePage() {
 
     return(
         <div className="flex flex-col">
-            <h1 className="text-4xl font-bold mx-auto mt-[3rem] mb-[2rem]">Welcome back, {user?.display_name}</h1>
+            <h1 className="text-4xl font-bold mx-auto mt-[3rem] mb-[2rem]">Welcome back, {user?.display_name}.</h1>
             <CategoryList />
             <Settings />
         </div>

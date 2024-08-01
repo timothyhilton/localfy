@@ -17,6 +17,14 @@ import {
 } from "@renderer/components/ui/tooltip"
 import { Button } from "../ui/button";
 import { DownloadMenu } from "../download-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@renderer/components/ui/dialog"
 
 export default function CategoryList(){
   const { token } = useTokenStore();
@@ -173,7 +181,28 @@ export default function CategoryList(){
                 <></>
               }
             </span>
-            <Button variant="outline" className="ml-1 mt-[-0.45rem] mb-[-5rem]">see list</Button>
+            <Dialog>
+              <DialogTrigger><Button variant="outline" className="ml-1 mt-[-0.45rem] mb-[-5rem]">see list</Button></DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Your Last {lastListenedLength} Listened to Songs</DialogTitle>
+                </DialogHeader>
+                <div className="mt-4 space-y-4">
+                  <Accordion type="single" collapsible className="mt-[-0.4rem] max-h-[25rem] overflow-scroll m-4 px-4 rounded-lg  border dark:bg-slate-900">
+                    {lastListened?.tracks?.map((track, index) => (
+                        <AccordionItem key={index} value={index.toString()}>
+                          <div className="my-2 flex flex-row">
+                            {index + 1 + "."}
+                            <img src={track.coverArtUrl} className="h-6 ml-3 mr-2" />
+                            {track.name}
+                          </div>
+                        </AccordionItem>
+                    ))}
+                  </Accordion>
+                </div>
+              </DialogContent>
+            </Dialog>
+            
           </span>
 
         </div>
