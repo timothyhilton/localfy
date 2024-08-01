@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useTokenStore } from '@renderer/stores/tokenStore';
-import PlaylistList from '@renderer/components/trackContainers/trackContainerList';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 import { useLastListenedLengthStore } from './stores/lastListenedLength';
@@ -12,7 +11,6 @@ interface userInfo {
 export default function HomePage() {
     const { token } = useTokenStore();
     const [user, setUserInfo] = useState<userInfo>();
-    const { length } = useLastListenedLengthStore();
 
     useEffect(() => {
         const fetchUserInfo = async () => {

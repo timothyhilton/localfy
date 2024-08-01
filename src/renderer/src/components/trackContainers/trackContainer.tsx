@@ -1,4 +1,3 @@
-import { Download } from "lucide-react"
 import { Card, CardHeader, CardTitle } from "../ui/card"
 import StatusButton from "./statusButton"
 import { DownloadMenu } from "@renderer/components/download-menu"
