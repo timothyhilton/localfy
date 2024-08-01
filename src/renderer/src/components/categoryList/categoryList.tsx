@@ -100,7 +100,7 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchLastListened() {
-      const res = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', {
+      const res = await fetch(`https://api.spotify.com/v1/me/player/recently-played?limit=${length}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -127,13 +127,12 @@ export default function CategoryList(){
         trackCount: mappedTracks.length,
         tracks: mappedTracks,
       };
-      console.log(lastListenedContainer)
   
       setLastListened(lastListenedContainer);
     }
   
     fetchLastListened();
-  }, [token]);
+  }, [token, length]);
 
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">

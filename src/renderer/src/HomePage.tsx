@@ -3,6 +3,7 @@ import { useTokenStore } from '@renderer/stores/tokenStore';
 import PlaylistList from '@renderer/components/trackContainers/trackContainerList';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
+import { useLastListenedLengthStore } from './stores/lastListenedLength';
 
 interface userInfo {
     display_name: string;
@@ -11,6 +12,7 @@ interface userInfo {
 export default function HomePage() {
     const { token } = useTokenStore();
     const [user, setUserInfo] = useState<userInfo>();
+    const { length } = useLastListenedLengthStore();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
@@ -32,6 +34,10 @@ export default function HomePage() {
 
         fetchUserInfo();
     }, [token]);
+
+    useEffect(() => {
+        window.api.getSetting('lastListenedLength').then(value => useLastListenedLengthStore.setState({ length: value }))
+    }, [])
 
     return(
         <div className="flex flex-col">
