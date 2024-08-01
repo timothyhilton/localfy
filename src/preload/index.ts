@@ -7,14 +7,17 @@ const api = {
   // renderer -> main
   startBackup: (data: BackupHelperType) => ipcRenderer.send('startBackup', data),
   startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
-  setSetting: (data: { setting: string, value: any }) => ipcRenderer.send('setSetting', data),
-  
+  setSetting: (data: { setting: string; value: any }) => ipcRenderer.invoke('setSetting', data),
+
   // main -> renderer
   onDownloadLog: (callback: Function) =>
-    ipcRenderer.on('send-download-log', (_event, data: { message: string, progress?: number, folderName: string }) => callback(data)),
+    ipcRenderer.on(
+      'send-download-log',
+      (_event, data: { message: string; progress?: number; folderName: string }) => callback(data)
+    ),
   onSetToken: (callback: Function) =>
     ipcRenderer.on('set-token', (_event, token: string) => callback(token)),
-  
+
   // renderer -> main -> renderer
   changeDirectory: () => ipcRenderer.invoke('changeDirectory'),
   getDirectory: () => ipcRenderer.invoke('getDirectory'),

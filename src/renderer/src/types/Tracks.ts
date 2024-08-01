@@ -1,18 +1,17 @@
 export default interface Track {
-    name: string
-    artists: string[]
-    album: string
-    id: string
-    coverArtUrl: string
+  name: string
+  artists: string[]
+  album: string
+  id: string
+  coverArtUrl: string
 }
 
 export interface TrackContainer {
-    name: string
-    id: string
-    type: "playlist" | "album"
-    imageUrl: string
-    trackListHref: string
-    trackCount: number
-    tracks: Track[] | null
+  name: string
+  id: string
+  type: 'playlist' | 'album' | 'lastlistened'
+  imageUrl: string
+  trackListHref: string
+  trackCount: number
+  tracks: Track[] | null
 }
-

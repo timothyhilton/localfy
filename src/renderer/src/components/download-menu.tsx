@@ -18,7 +18,7 @@ import { Separator } from './ui/separator'
 import { Progress } from "@renderer/components/ui/progress"
 import Track, { TrackContainer } from '@renderer/types/Tracks'
 
-export function DownloadMenu({ trackContainer }: { trackContainer: TrackContainer }): JSX.Element {
+export function DownloadMenu({ trackContainer, lighter }: { trackContainer: TrackContainer, lighter?: boolean | undefined}): JSX.Element {
   const { token } = useTokenStore()
   const [open, setOpen] = useState(false)
   const [logMessages, setLogMessages] = useState<String[]>([])
@@ -29,7 +29,7 @@ export function DownloadMenu({ trackContainer }: { trackContainer: TrackContaine
       return
     }
 
-    if (trackContainer.type == 'album') {
+    if (trackContainer.type == 'album' || trackContainer.type == "lastlistened") {
       window.api.startBackup({ tracks: trackContainer.tracks, folderName: trackContainer.name })
     }
 
@@ -82,7 +82,7 @@ export function DownloadMenu({ trackContainer }: { trackContainer: TrackContaine
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <DownloadButton onClick={() => setOpen(!open)} />
+        <DownloadButton lighter={lighter} onClick={() => setOpen(!open)} />
       </SheetTrigger>
       <SheetContent side="left" className="space-y-3">
         <SheetHeader className="space-y-[0rem]">

@@ -3,11 +3,9 @@ import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import startBackup from './backupHelper'
-import SpotifyTrackListResType from './types/SpotifyTrackListResType'
-import settings from 'electron-settings';
+import settings from 'electron-settings'
 import BackupHelperType from './types/BackupHelperType'
 import defaultSettingsValues from '../../resources/defaultSettingsValues.json'
-import fs from 'fs'
 
 let mainWindow: BrowserWindow
 
@@ -26,11 +24,11 @@ function createWindow(): void {
   })
 
   // setup protocol "fyfy://"
-  const protocolName = 'fyfy';
+  const protocolName = 'fyfy'
   if (process.defaultApp && process.argv.length >= 2) {
-    app.setAsDefaultProtocolClient(protocolName, process.execPath, [resolve(process.argv[1])]);
+    app.setAsDefaultProtocolClient(protocolName, process.execPath, [resolve(process.argv[1])])
   } else {
-    app.setAsDefaultProtocolClient(protocolName);
+    app.setAsDefaultProtocolClient(protocolName)
   }
 
   mainWindow.on('ready-to-show', () => {
@@ -70,30 +68,43 @@ app.whenReady().then(() => {
   })
 
   ipcMain.on('startAuthFlow', (_event, client_id: string) => {
-    shell.openExternal(`https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`)
+    shell.openExternal(
+      `https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20user-read-recently-played%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`
+    )
   })
 
   ipcMain.handle('changeDirectory', async () => {
     const directory = await dialog.showOpenDialog({ properties: ['openDirectory'] })
-    if(directory.filePaths[0]){ settings.set('directory', directory.filePaths[0]) }
+    if (directory.filePaths[0]) {
+      settings.set('directory', directory.filePaths[0])
+    }
     return directory.filePaths[0]
   })
 
-  ipcMain.handle('getDirectory', async() => {
+  ipcMain.handle('getDirectory', async () => {
     return await settings.get('directory')
   })
 
-  ipcMain.handle('getSetting', async(_event, setting: string) => {
-    // finds default value if setting has never been set/got before
-    if(!(await settings.has(setting))){
-      await settings.set(setting, defaultSettingsValues[setting])
-    }
+  ipcMain.handle('getSetting', async (_event, setting: string) => {
+    try {
+      if (!(await settings.has(setting))) {
+        await settings.set(setting, defaultSettingsValues[setting])
+      }
 
-    return await settings.get(setting)
+      return await settings.get(setting)
+    } catch (error) {
+      console.error(`Error getting setting ${setting}:`, error)
+      return defaultSettingsValues[setting]
+    }
   })
 
-  ipcMain.on('setSetting', (_event, data: { setting: string, value: any}) => {
-    settings.set(data.setting, data.value)
+  ipcMain.handle('setSetting', async (_event, data: { setting: string; value: any }) => {
+    try {
+      await settings.set(data.setting, data.value)
+    } catch (error) {
+      console.error(`Error setting ${data.setting}:`, error)
+      throw error
+    }
   })
 
   createWindow()
@@ -118,7 +129,7 @@ app.on('window-all-closed', () => {
 // code. You can also put them in separate files and require them here.
 
 // protocol handling for windows and linux
-if((process.platform == "win32") || (process.platform == "linux")){
+if (process.platform == 'win32' || process.platform == 'linux') {
   const gotTheLock = app.requestSingleInstanceLock()
 
   if (!gotTheLock) {
@@ -128,7 +139,7 @@ if((process.platform == "win32") || (process.platform == "linux")){
       // Someone tried to run a second instance, we should focus our window.
       if (mainWindow) {
         if (mainWindow.isMinimized()) mainWindow.restore()
-          mainWindow.focus()
+        mainWindow.focus()
       }
       handleAuthCallback(commandLine.pop()!)
     })
@@ -136,15 +147,15 @@ if((process.platform == "win32") || (process.platform == "linux")){
 }
 
 // protocol handler for mac
-if(process.platform == "darwin"){
+if (process.platform == 'darwin') {
   app.on('open-url', (_event, url) => {
     handleAuthCallback(url)
   })
 }
 
 function handleAuthCallback(url: string) {
-  const accessToken = url.match(/access_token=([^&]+)/);
-  const token = accessToken ? accessToken[1] : null;
+  const accessToken = url.match(/access_token=([^&]+)/)
+  const token = accessToken ? accessToken[1] : null
 
-  mainWindow.webContents.send("set-token", token)
+  mainWindow.webContents.send('set-token', token)
 }

@@ -21,6 +21,7 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
+    "@distube/ytdl-core": "^4.13.7",
     "@electron-toolkit/preload": "^3.0.0",
     "@electron-toolkit/utils": "^3.0.0",
     "@hookform/resolvers": "^3.3.4",
@@ -32,6 +33,7 @@
     "@radix-ui/react-scroll-area": "^1.0.5",
     "@radix-ui/react-separator": "^1.0.3",
     "@radix-ui/react-slot": "^1.0.2",
+    "@radix-ui/react-tooltip": "^1.0.7",
     "@types/fluent-ffmpeg": "^2.1.24",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
@@ -48,7 +50,6 @@
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "yt-search": "^2.10.4",
-    "ytdl-core": "^4.11.5",
     "zod": "^3.22.4",
     "zustand": "^4.5.2"
   },

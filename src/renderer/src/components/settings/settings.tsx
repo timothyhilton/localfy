@@ -12,9 +12,11 @@ import { Label } from "@renderer/components/ui/label"
 import { ModeToggle } from "../mode-toggle"
 import { useEffect, useState } from "react"
 import SettingsCheckbox from "./settings-checkbox"
+import { useLastListenedLengthStore } from "@renderer/stores/lastListenedLength"
 
 export default function Settings(){
   const [directory, setDirectory] = useState<string>()
+  const { length } = useLastListenedLengthStore()
 
   useEffect(() => {
     window.api.getDirectory()
@@ -26,6 +28,11 @@ export default function Settings(){
       .then((directory) => {
         if(directory){ setDirectory(directory) }
       })
+  }
+
+  function updateLastListened(e: React.ChangeEvent<HTMLInputElement>){
+    useLastListenedLengthStore.setState({ length: parseInt(e.target.value, 10) })
+    window.api.setSetting({setting: 'lastListenedLength', value: parseInt(e.target.value, 10)})
   }
 
   return(
@@ -62,6 +69,18 @@ export default function Settings(){
               readOnly
               className="col-span-3 hover:cursor-pointer"
               onClick={changeDirectory}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="directory" className="text-right">
+              Last Listened
+            </Label>
+            <Input
+              value={length}
+              type="number"
+              min="1"
+              max="50"
+              onChange={updateLastListened}
             />
           </div>
         </div>
