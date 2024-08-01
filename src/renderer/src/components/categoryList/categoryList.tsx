@@ -9,19 +9,20 @@ import {
 } from "@renderer/components/ui/accordion"
 import Track, { TrackContainer } from "@renderer/types/Tracks";
 import TrackContainerList from "../trackContainers/trackContainerList";
-import LastListenedContainer from "../trackContainers/LastListenedContainer";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@renderer/components/ui/tooltip"
+import { Button } from "../ui/button";
 
 export default function CategoryList(){
   const { token } = useTokenStore();
   const [playlists, setPlaylists] = useState<TrackContainer[]>([]);
   const [savedAlbums, setSavedAlbums] = useState<TrackContainer[]>([]);
   const [lastListenedLength, setLastListenedLength] = useState<number>(0);
+  const [lastListened, setLastListened] = useState<TrackContainer[]>([]);
 
   useEffect(() => {
     window.api.getSetting('lastListenedLength').then((value: number) => {
@@ -94,6 +95,24 @@ export default function CategoryList(){
     fetchSavedAlbums();
   }, [token]);
 
+  useEffect(() => {
+    async function fetchLastListened() {
+      const res = await fetch('https://api.spotify.com/v1/me/player/recently-played', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch playlists');
+      }
+      const data = await res.json();
+  
+      console.log(data)
+    }
+  
+    fetchLastListened();
+  }, [token]);
+
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">
 
@@ -112,7 +131,8 @@ export default function CategoryList(){
       </AccordionItem>
 
       <AccordionItem value="item-3">
-        <AccordionTrigger>
+        <div className="flex flex-1 items-center justify-between py-4 font-medium transition-all">
+
           <span className="flex flex-row">
             Last {lastListenedLength} Listened to Songs
             <TooltipProvider>
@@ -126,11 +146,13 @@ export default function CategoryList(){
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
+            <span className="my-[-0.5rem] ml-3 space-x-2">
+              <Button variant="outline">test</Button>
+              <Button variant="outline">test</Button>
+            </span>
           </span>
-        </AccordionTrigger>
-        <AccordionContent>
-          <LastListenedContainer />
-        </AccordionContent>
+
+        </div>
       </AccordionItem>
       
     </Accordion>

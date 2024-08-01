@@ -121,13 +121,9 @@ function downloadSpotifyTrackList(trackList: Track[], directory: string, logger:
     const albumCoverUrl = track.coverArtUrl
     // todo: error handling for the above
 
-    console.log('test1')
     const start = Date.now()
-    console.log('test2')
     const songPath = `${directory}/${track.name.replace(/[<>:"\/\\|?*\x00-\x1F]/g, '')}.mp3`
-    console.log('test3')
     const saveCoverArt: boolean = (await settings.getSync('saveCoverArt')) as boolean
-    console.log('test4')
 
     // todo: make this more concise
     if (saveCoverArt) {
