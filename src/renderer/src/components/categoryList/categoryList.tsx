@@ -16,13 +16,14 @@ import {
   TooltipTrigger,
 } from "@renderer/components/ui/tooltip"
 import { Button } from "../ui/button";
+import { DownloadMenu } from "../download-menu";
 
 export default function CategoryList(){
   const { token } = useTokenStore();
   const [playlists, setPlaylists] = useState<TrackContainer[]>([]);
   const [savedAlbums, setSavedAlbums] = useState<TrackContainer[]>([]);
   const [lastListenedLength, setLastListenedLength] = useState<number>(0);
-  const [lastListened, setLastListened] = useState<TrackContainer[]>([]);
+  const [lastListened, setLastListened] = useState<TrackContainer>();
 
   useEffect(() => {
     window.api.getSetting('lastListenedLength').then((value: number) => {
@@ -97,17 +98,36 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchLastListened() {
-      const res = await fetch('https://api.spotify.com/v1/me/player/recently-played', {
+      const res = await fetch('https://api.spotify.com/v1/me/player/recently-played?limit=10', {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       if (!res.ok) {
-        throw new Error('Failed to fetch playlists');
+        throw new Error('Failed to fetch recently played tracks');
       }
       const data = await res.json();
   
-      console.log(data)
+      const mappedTracks: Track[] = data.items.map((item: any) => ({
+        name: item.track.name,
+        artists: item.track.artists.map((artist: any) => artist.name),
+        album: item.track.album.name,
+        id: item.track.id,
+        coverArtUrl: item.track.album.images[0]?.url || '',
+      }));
+  
+      const lastListenedContainer: TrackContainer = {
+        name: "Recently Played",
+        id: "recently-played",
+        type: 'lastlistened',
+        imageUrl: mappedTracks[0]?.coverArtUrl || '',
+        trackListHref: data.href,
+        trackCount: mappedTracks.length,
+        tracks: mappedTracks,
+      };
+      console.log(lastListenedContainer)
+  
+      setLastListened(lastListenedContainer);
     }
   
     fetchLastListened();
@@ -146,10 +166,14 @@ export default function CategoryList(){
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <span className="my-[-0.5rem] ml-3 space-x-2">
-              <Button variant="outline">test</Button>
-              <Button variant="outline">test</Button>
+            <span className="mt-[-0.7rem] mb-[-5rem] ml-3 space-x-2 flex flex-row">
+              {lastListened ? 
+                <DownloadMenu lighter={true} trackContainer={lastListened} /> 
+                : 
+                <></>
+              }
             </span>
+            <Button variant="outline" className="ml-1 mt-[-0.45rem] mb-[-5rem]">see list</Button>
           </span>
 
         </div>
