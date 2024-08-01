@@ -12,10 +12,15 @@ export default function SettingsCheckbox({ setting }: { setting: string }) {
     window.api.getSetting(setting).then(value => setToggled(value))
   }, [])
 
-  function onClick() {
-    window.api.setSetting({setting: setting, value: !toggled})
-    setToggled(!toggled)
+  async function onClick() {
+    try {
+      await window.api.setSetting({setting: setting, value: !toggled})
+      setToggled(!toggled)
+    } catch (error) {
+      console.error(`Failed to set ${setting}:`, error)
+    }
   }
+
 
   return (
     <DropdownMenu>

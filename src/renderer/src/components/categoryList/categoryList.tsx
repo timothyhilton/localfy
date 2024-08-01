@@ -96,18 +96,21 @@ export default function CategoryList(){
 
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">
+
       <AccordionItem value="item-1">
         <AccordionTrigger>Playlists</AccordionTrigger>
         <AccordionContent>
           <TrackContainerList trackContainers={playlists}/>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="item-2">
         <AccordionTrigger>Saved Albums</AccordionTrigger>
         <AccordionContent>
           <TrackContainerList trackContainers={savedAlbums}/>
         </AccordionContent>
       </AccordionItem>
+
       <AccordionItem value="item-3">
         <AccordionTrigger>
           <span className="flex flex-row">
@@ -129,6 +132,7 @@ export default function CategoryList(){
           <LastListenedContainer />
         </AccordionContent>
       </AccordionItem>
+      
     </Accordion>
   )
 }
