@@ -12,6 +12,7 @@ import { ModeToggle } from "../mode-toggle"
 import { useEffect, useState } from "react"
 import SettingsCheckbox from "./settings-checkbox"
 import { useLastListenedLengthStore } from "@renderer/stores/lastListenedLength"
+import { useTokenStore } from "@renderer/stores/tokenStore"
 
 export default function Settings(){
   const [directory, setDirectory] = useState<string>()
@@ -32,6 +33,10 @@ export default function Settings(){
   function updateLastListened(e: React.ChangeEvent<HTMLInputElement>){
     useLastListenedLengthStore.setState({ length: parseInt(e.target.value, 10) })
     window.api.setSetting({setting: 'lastListenedLength', value: parseInt(e.target.value, 10)})
+  }
+
+  function onProxyToggle(){
+    useTokenStore.getState().setToken("")
   }
 
   return(
@@ -81,6 +86,12 @@ export default function Settings(){
               max="50"
               onChange={updateLastListened}
             />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="theme" className="text-right">
+              Use Proxy
+            </Label>
+            <SettingsCheckbox onClick={onProxyToggle} setting="useProxy"/>
           </div>
         </div>
       </DialogContent>

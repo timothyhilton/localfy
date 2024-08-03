@@ -10,6 +10,7 @@ import {
 import Track, { TrackContainer } from "@renderer/types/Tracks";
 import TrackContainerList from "../trackContainers/trackContainerList";
 import LastListenedList from "../trackContainers/lastListenedList";
+import { callSpotifyApi } from "../api-util";
 
 export default function CategoryList(){
   const { token } = useTokenStore();
@@ -20,12 +21,7 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchPlaylists() {
-      const res = await fetch(`https://nmukb92alf.execute-api.ap-southeast-2.amazonaws.com/localfy/spotify/?token=${token}&subdomain=v1/me/playlists`);
-      
-      if (!res.ok) {
-        throw new Error('Failed to fetch playlists');
-      }
-      const data = await res.json();
+      const data = await callSpotifyApi("v1/me/playlists", token)
   
       const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
         name: playlist.name,
@@ -44,15 +40,7 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchSavedAlbums() {
-      const res = await fetch('https://api.spotify.com/v1/me/albums?authorization=' + token, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch albums');
-      }
-      const data = await res.json();
+      const data = await callSpotifyApi("v1/me/albums", token)
   
       const mappedAlbums: TrackContainer[] = data.items.map((item: any) => {
         const mappedTracks: Track[] = item.album.tracks.items.map((track: any) => ({
@@ -84,15 +72,7 @@ export default function CategoryList(){
     async function fetchLastListened() {
       if(!length) {return}
       
-      const res = await fetch(`https://api.spotify.com/v1/me/player/recently-played?limit=${length}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!res.ok) {
-        throw new Error('Failed to fetch recently played tracks');
-      }
-      const data = await res.json();
+      const data = await callSpotifyApi(`v1/me/player/recently-played?limit=${length}`, token)
   
       const mappedTracks: Track[] = data.items.map((item: any) => ({
         name: item.track.name,

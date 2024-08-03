@@ -55,7 +55,7 @@ function LoginScreen() {
 
   }, [client_id]);
 
-  if (token) {
+  if (token && token != "") {
     return <HomePage />;
   } else {
     return (
