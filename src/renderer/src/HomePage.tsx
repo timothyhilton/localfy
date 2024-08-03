@@ -3,6 +3,7 @@ import { useTokenStore } from '@renderer/stores/tokenStore';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 import { useLastListenedLengthStore } from './stores/lastListenedLength';
+import { callSpotifyApi } from './components/api-util';
 
 interface userInfo {
     display_name: string;
@@ -15,15 +16,8 @@ export default function HomePage() {
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const response = await fetch('https://api.spotify.com/v1/me', {
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-                if (!response.ok) {
-                    throw new Error('Failed to fetch user info');
-                }
-                const data = await response.json();
+                const data = await callSpotifyApi("v1/me", token)
+                
                 setUserInfo(data);
             } catch (error) {
                 console.error('Error fetching playlists:', error);
