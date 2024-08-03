@@ -20,11 +20,8 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchPlaylists() {
-      const res = await fetch('https://api.spotify.com/v1/me/playlists', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(`https://nmukb92alf.execute-api.ap-southeast-2.amazonaws.com/localfy/spotify/?token=${token}&subdomain=v1/me/playlists`);
+      
       if (!res.ok) {
         throw new Error('Failed to fetch playlists');
       }
@@ -47,7 +44,7 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchSavedAlbums() {
-      const res = await fetch('https://api.spotify.com/v1/me/albums', {
+      const res = await fetch('https://api.spotify.com/v1/me/albums?authorization=' + token, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -85,6 +82,8 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchLastListened() {
+      if(!length) {return}
+      
       const res = await fetch(`https://api.spotify.com/v1/me/player/recently-played?limit=${length}`, {
         headers: {
           Authorization: `Bearer ${token}`,

@@ -1,4 +1,5 @@
 {
-    "saveCoverArt": true,
-    "lastListenedLength": 10
+  "saveCoverArt": true,
+  "lastListenedLength": 10,
+  "useProxy": false
 }
