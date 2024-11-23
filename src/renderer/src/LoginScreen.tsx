@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { Input } from './components/ui/input'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -13,9 +13,9 @@ import {
   FormLabel,
   FormMessage,
 } from "@renderer/components/ui/form"
-import { CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
-import { ModeToggle } from './components/mode-toggle';
-import { generateCodeVerifier, generateCodeChallenge } from './pkce';
+import { CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
+import { generateCodeVerifier, generateCodeChallenge } from './pkce'
+import Settings from './components/settings/settings'
 
 const formSchema = z.object({
   client_id: z.string().min(32, {
@@ -56,6 +56,7 @@ function LoginScreen() {
   useEffect(() => {
     const handleToken = async (token: string) => {
       await window.api.setSetting({ setting: 'token', value: token })
+      window.location.reload()
     };
 
     window.api.onSetToken(handleToken)
@@ -74,7 +75,7 @@ function LoginScreen() {
               name="client_id"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Spotify API Client id</FormLabel>
+                  <FormLabel>Spotify API Client ID</FormLabel>
                   <FormControl>
                     <Input placeholder="client_id" spellCheck="false" {...field} />
                   </FormControl>
@@ -86,11 +87,12 @@ function LoginScreen() {
               )}
             />
             <Button type="submit">Open Browser to Login</Button>
+            
           </form>
         </Form>
       </CardContent>
-      <div className="fixed top-2 right-2">
-        <ModeToggle />
+      <div className="fixed top-2 right-2 flex space-x-2">
+        <Settings />
       </div>
     </div>
   )
