@@ -187,5 +187,7 @@ async function exchangeCodeForToken(code: string, codeVerifier: string) {
   })
 
   const data = await response.json()
+  await settings.set('refresh_token', data.refresh_token)
+
   return data.access_token
 }

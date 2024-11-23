@@ -1,4 +1,3 @@
-import { useTokenStore } from "@renderer/stores/tokenStore";
 import { useEffect, useState } from "react";
 import { useLastListenedLengthStore } from "@renderer/stores/lastListenedLength";
 import {
@@ -13,7 +12,6 @@ import LastListenedList from "../trackContainers/lastListenedList";
 import { callSpotifyApi } from "../api-util";
 
 export default function CategoryList(){
-  const { token } = useTokenStore();
   const { length } = useLastListenedLengthStore();
   const [playlists, setPlaylists] = useState<TrackContainer[]>([]);
   const [savedAlbums, setSavedAlbums] = useState<TrackContainer[]>([]);
@@ -21,7 +19,7 @@ export default function CategoryList(){
 
   useEffect(() => {
     async function fetchPlaylists() {
-      const data = await callSpotifyApi("v1/me/playlists", token)
+      const data = await callSpotifyApi("v1/me/playlists")
       
       const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
         name: playlist.name,
@@ -36,11 +34,11 @@ export default function CategoryList(){
     }
   
     fetchPlaylists();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     async function fetchSavedAlbums() {
-      const data = await callSpotifyApi("v1/me/albums", token)
+      const data = await callSpotifyApi("v1/me/albums")
   
       const mappedAlbums: TrackContainer[] = data.items.map((item: any) => {
         const mappedTracks: Track[] = item.album.tracks.items.map((track: any) => ({
@@ -66,13 +64,13 @@ export default function CategoryList(){
     }
   
     fetchSavedAlbums();
-  }, [token]);
+  }, []);
 
   useEffect(() => {
     async function fetchLastListened() {
       if(!length) {return}
       
-      const data = await callSpotifyApi(`v1/me/player/recently-played?limit=${length}`, token)
+      const data = await callSpotifyApi(`v1/me/player/recently-played?limit=${length}`)
   
       const mappedTracks: Track[] = data.items.map((item: any) => ({
         name: item.track.name,
@@ -96,7 +94,7 @@ export default function CategoryList(){
     }
   
     fetchLastListened();
-  }, [token, length]);
+  }, [length]);
 
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">

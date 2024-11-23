@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { useTokenStore } from '@renderer/stores/tokenStore';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 import { useLastListenedLengthStore } from './stores/lastListenedLength';
@@ -10,13 +9,12 @@ interface userInfo {
 }
 
 export default function HomePage() {
-    const { token } = useTokenStore();
     const [user, setUserInfo] = useState<userInfo>();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const data = await callSpotifyApi("v1/me", token)
+                const data = await callSpotifyApi("v1/me")
                 
                 setUserInfo(data);
             } catch (error) {
@@ -25,7 +23,7 @@ export default function HomePage() {
         };
 
         fetchUserInfo();
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         window.api.getSetting('lastListenedLength').then(value => useLastListenedLengthStore.setState({ length: value }))

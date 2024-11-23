@@ -1,6 +1,8 @@
 const proxyUrl = 'https://nmukb92alf.execute-api.ap-southeast-2.amazonaws.com/localfy'
 
-export async function callSpotifyApi(subdomain: string, token: string) {
+export async function callSpotifyApi(subdomain: string) {
+  const token = await window.api.getSetting('token')
+  
   if (await window.api.getSetting("useProxy")) {
     const res = await fetch(`${proxyUrl}/?token=${token}&subdomain=${subdomain}`)
     if (!res.ok) {
@@ -20,4 +22,9 @@ export async function callSpotifyApi(subdomain: string, token: string) {
 
     return res.json()
   }
+}
+
+export async function isUserLoggedIn(): Promise<boolean> {
+  const token = await window.api.getSetting('token')
+  return token != ""
 }
