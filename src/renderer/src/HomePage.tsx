@@ -3,6 +3,7 @@ import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 import { useLastListenedLengthStore } from './stores/lastListenedLength';
 import { callSpotifyApi } from './components/api-util';
+import { SignOut, ReloadPage } from './components/top-right-buttons';
 
 interface userInfo {
     display_name: string;
@@ -33,7 +34,11 @@ export default function HomePage() {
         <div className="flex flex-col">
             <h1 className="text-4xl font-bold mx-auto mt-[3rem] mb-[2rem]">Welcome back, {user?.display_name}.</h1>
             <CategoryList />
-            <Settings />
+            <div className="fixed right-2 top-2 space-x-2">
+                <ReloadPage />
+                <SignOut />
+                <Settings />
+            </div>
         </div>
     )
 }
