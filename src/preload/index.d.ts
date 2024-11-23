@@ -2,7 +2,7 @@ import { ElectronAPI } from '@electron-toolkit/preload'
 
 export interface IElectronAPI {
   // renderer -> main
-  startAuthFlow: (client_id: string) => void
+  startAuthFlow: () => void
   startBackup: (data: BackupHelperType) => void
   setSetting: (data: { setting: string, value: any }) => void
 

@@ -12,14 +12,13 @@ import {
 } from '@renderer/components/ui/sheet'
 import DownloadButton from '@renderer/components/trackContainers/downloadButton'
 import { useEffect, useState } from 'react'
-import { useTokenStore } from '@renderer/stores/tokenStore'
 import { ScrollArea } from './ui/scroll-area'
 import { Separator } from './ui/separator'
 import { Progress } from "@renderer/components/ui/progress"
 import Track, { TrackContainer } from '@renderer/types/Tracks'
+import { callSpotifyApi } from './api-util'
 
 export function DownloadMenu({ trackContainer, lighter }: { trackContainer: TrackContainer, lighter?: boolean | undefined}): JSX.Element {
-  const { token } = useTokenStore()
   const [open, setOpen] = useState(false)
   const [logMessages, setLogMessages] = useState<String[]>([])
   const [progress, setProgress] = useState<number>();
@@ -35,31 +34,23 @@ export function DownloadMenu({ trackContainer, lighter }: { trackContainer: Trac
 
     if (trackContainer.type == 'playlist') {
       try {
-        const res = await fetch(trackContainer.trackListHref, {
-          headers: {
-              Authorization: `Bearer ${token}`,
-          },
-        })
-    
-        if (!res.ok) {
-            throw new Error(`Failed to fetch tracks for playlist ${trackContainer.name}`)
-        }
-    
-        const data = await res.json();
-    
+        const subdomain = trackContainer.trackListHref.replace('https://api.spotify.com/', '');
+        const data = await callSpotifyApi(subdomain);
+
         const mappedTracks: Track[] = data.items.map((item: any) => {
-            const track = item.track || item;
-            return {
-                name: track.name,
-                artists: track.artists.map((artist: any) => artist.name),
-                album: track.album.name,
-                id: track.id,
-                coverArtUrl: track.album.images[0]?.url || '',
-            };
+          const track = item.track || item;
+          return {
+            name: track.name,
+            artists: track.artists.map((artist: any) => artist.name),
+            album: track.album.name,
+            id: track.id,
+            coverArtUrl: (track.album.images && track.album.images[0]?.url) || '',
+          };
         });
+        
         window.api.startBackup({ tracks: mappedTracks, folderName: trackContainer.name });
       } catch (error) {
-        console.error('Error fetching tracks for playlist:', error)
+        console.error('Error fetching tracks for playlist:', error);
       }
     }
   }

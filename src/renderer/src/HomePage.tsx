@@ -1,22 +1,21 @@
 import { useEffect, useState } from 'react';
-import { useTokenStore } from '@renderer/stores/tokenStore';
 import Settings from './components/settings/settings';
 import CategoryList from './components/categoryList/categoryList';
 import { useLastListenedLengthStore } from './stores/lastListenedLength';
 import { callSpotifyApi } from './components/api-util';
+import { SignOut, ReloadPage } from './components/top-right-buttons';
 
 interface userInfo {
     display_name: string;
 }
 
 export default function HomePage() {
-    const { token } = useTokenStore();
     const [user, setUserInfo] = useState<userInfo>();
 
     useEffect(() => {
         const fetchUserInfo = async () => {
             try {
-                const data = await callSpotifyApi("v1/me", token)
+                const data = await callSpotifyApi("v1/me")
                 
                 setUserInfo(data);
             } catch (error) {
@@ -25,7 +24,7 @@ export default function HomePage() {
         };
 
         fetchUserInfo();
-    }, [token]);
+    }, []);
 
     useEffect(() => {
         window.api.getSetting('lastListenedLength').then(value => useLastListenedLengthStore.setState({ length: value }))
@@ -35,7 +34,11 @@ export default function HomePage() {
         <div className="flex flex-col">
             <h1 className="text-4xl font-bold mx-auto mt-[3rem] mb-[2rem]">Welcome back, {user?.display_name}.</h1>
             <CategoryList />
-            <Settings />
+            <div className="fixed right-2 top-2 space-x-2">
+                <ReloadPage />
+                <SignOut />
+                <Settings />
+            </div>
         </div>
     )
 }
