@@ -6,7 +6,7 @@ import BackupHelperType from '../main/types/BackupHelperType'
 const api = {
   // renderer -> main
   startBackup: (data: BackupHelperType) => ipcRenderer.send('startBackup', data),
-  startAuthFlow: (client_id: string) => ipcRenderer.send('startAuthFlow', client_id),
+  startAuthFlow: () => ipcRenderer.send('startAuthFlow'),
   setSetting: (data: { setting: string; value: any }) => ipcRenderer.invoke('setSetting', data),
 
   // main -> renderer

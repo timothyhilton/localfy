@@ -18,6 +18,7 @@ import {
 } from "@renderer/components/ui/form"
 import { CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card';
 import { ModeToggle } from './components/mode-toggle';
+import { generateCodeVerifier, generateCodeChallenge } from './pkce';
 
 const formSchema = z.object({
   client_id: z.string().min(32, {
@@ -27,33 +28,47 @@ const formSchema = z.object({
 
 function LoginScreen() {
   const { token } = useTokenStore();
-  const [client_id, setClientId] = useState<string>("");
+  const [client_id, setClientId] = useState<string>("")
 
-  if(localStorage.getItem('client_id') == null){
-    localStorage.setItem('client_id', "");
-  }
+  useEffect(() => {
+    const getClientId = async () => {
+      const storedClientId = await window.api.getSetting('client_id')
+      if (storedClientId) {
+        setClientId(storedClientId);
+        form.setValue('client_id', storedClientId);
+      }
+    };
+    getClientId();
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      client_id: localStorage.getItem('client_id')!,
+      client_id: '',
     },
-  })
+  });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setClientId(values.client_id);
-    window.api.startAuthFlow(values.client_id);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setClientId(values.client_id)
+    
+    const codeVerifier = generateCodeVerifier();
+    const codeChallenge = await generateCodeChallenge(codeVerifier)
+    
+    await window.api.setSetting({ setting: 'client_id', value: values.client_id })
+    await window.api.setSetting({ setting: 'code_verifier', value: codeVerifier })
+    await window.api.setSetting({ setting: 'code_challenge', value: codeChallenge })
+
+    window.api.startAuthFlow()
   }
 
   useEffect(() => {
-    const handleToken = (token: string) => {
-      localStorage.setItem('client_id', client_id);
-      useTokenStore.getState().setToken(token);
+    const handleToken = async (token: string) => {
+      await window.api.setSetting({ setting: 'token', value: token })
+      useTokenStore.getState().setToken(token)
     };
 
-    window.api.onSetToken(handleToken);
-
-  }, [client_id]);
+    window.api.onSetToken(handleToken)
+  }, [])
 
   if (token && token != "") {
     return <HomePage />;

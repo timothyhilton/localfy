@@ -67,9 +67,13 @@ app.whenReady().then(() => {
     startBackup(data.tracks, data.folderName, mainWindow)
   })
 
-  ipcMain.on('startAuthFlow', (_event, client_id: string) => {
+  ipcMain.on('startAuthFlow', async (_event) => {
+    const client_id = await settings.get('client_id')
+    const codeChallenge = await settings.get('code_challenge')
+
+    console.log("codeChallenge", codeChallenge)
     shell.openExternal(
-      `https://accounts.spotify.com/authorize?response_type=token&client_id=${client_id}&scope=playlist-read-private%20user-read-recently-played%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&state=test`
+      `https://accounts.spotify.com/authorize?response_type=code&client_id=${client_id}&scope=playlist-read-private%20user-read-recently-played%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&code_challenge=${codeChallenge}&code_challenge_method=S256`
     )
   })
 
@@ -153,9 +157,35 @@ if (process.platform == 'darwin') {
   })
 }
 
-function handleAuthCallback(url: string) {
-  const accessToken = url.match(/access_token=([^&]+)/)
-  const token = accessToken ? accessToken[1] : null
+async function handleAuthCallback(url: string) {
+  const code = url.match(/code=([^&]+)/)?.[1]
 
-  mainWindow.webContents.send('set-token', token)
+  if (code) {
+    const codeVerifier = await settings.get('code_verifier')
+    if (!codeVerifier) {
+      console.error('No code verifier found')
+      return
+    }
+    const token = await exchangeCodeForToken(code, codeVerifier as string)
+    mainWindow.webContents.send('set-token', token)
+  }
+}
+
+async function exchangeCodeForToken(code: string, codeVerifier: string) {
+  const response = await fetch('https://accounts.spotify.com/api/token', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: new URLSearchParams({
+      grant_type: 'authorization_code',
+      code: code,
+      redirect_uri: 'fyfy://redirect',
+      client_id: await settings.get('client_id') as string,
+      code_verifier: codeVerifier,
+    }),
+  })
+
+  const data = await response.json()
+  return data.access_token
 }
