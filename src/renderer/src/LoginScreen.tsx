@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { Input } from './components/ui/input'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
@@ -16,6 +16,7 @@ import {
 import { CardContent, CardHeader, CardTitle } from '@renderer/components/ui/card'
 import { generateCodeVerifier, generateCodeChallenge } from './pkce'
 import Settings from './components/settings/settings'
+import SignInCode from './components/signin-code'
 
 const formSchema = z.object({
   client_id: z.string().min(32, {
@@ -24,6 +25,9 @@ const formSchema = z.object({
 })
 
 function LoginScreen() {
+  const [isSignInCodeOpen, setIsSignInCodeOpen] = useState(false)
+  const [signInCode, setSignInCode] = useState("")
+
   useEffect(() => {
     const getClientId = async () => {
       const storedClientId = await window.api.getSetting('client_id')
@@ -33,6 +37,10 @@ function LoginScreen() {
     };
     getClientId();
   }, []);
+
+  const handleDialogOpenChange = (open) => {
+    setIsSignInCodeOpen(open)
+  };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,6 +63,27 @@ function LoginScreen() {
 
   useEffect(() => {
     const handleToken = async (token: string) => {
+
+      if(isSignInCodeOpen) {
+        const codeVerifier = await window.api.getSetting('code_verifier');
+        const refreshToken = await window.api.getSetting('refresh_token');
+
+        await window.api.setSetting({ setting: 'token', value: "" })
+        await window.api.setSetting({ setting: 'refresh_token', value: "" })
+
+        const tokenData = {
+          token: token,
+          refreshToken: refreshToken,
+          codeVerifier: codeVerifier
+        };
+
+        const tokenDataJson = JSON.stringify(tokenData);
+        const base64TokenData = btoa(tokenDataJson);
+
+        setSignInCode(base64TokenData)
+        return
+      }
+
       await window.api.setSetting({ setting: 'token', value: token })
       window.location.reload()
     };
@@ -87,8 +116,8 @@ function LoginScreen() {
               )}
             />
             <Button type="submit">Open Browser to Login</Button>
-            
           </form>
+          <SignInCode isOpen={isSignInCodeOpen} onOpenChange={handleDialogOpenChange} signInCode={signInCode} handleGetCode={form.handleSubmit(onSubmit)}/>
         </Form>
       </CardContent>
       <div className="fixed top-2 right-2 flex space-x-2">
