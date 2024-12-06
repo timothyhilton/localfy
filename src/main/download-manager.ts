@@ -11,6 +11,7 @@ import ffmetadata from 'ffmetadata'
 import * as mm from 'music-metadata'
 import Track from './types/Tracks'
 import readline from 'readline'
+import { getSetting } from './index'
 
 const ffmpegPath = ffmpegStatic!.replace('app.asar', 'app.asar.unpacked')
 const ffprobePath = ffprobeStatic.path.replace('app.asar', 'app.asar.unpacked')
@@ -46,7 +47,7 @@ export default async function startBackup(
   // filter out any track that has already been downloaded
   const filteredTracks = tracks.filter((track) => !songIds.includes(track.id))
 
-  await downloadSpotifyTrackList(filteredTracks, directory, logToRenderer)
+  await batchTrackList(filteredTracks, directory, logToRenderer)
 }
 
 function getDirectory(folderName: string) {
@@ -98,6 +99,25 @@ async function extractSongIdsFromMetadata(directory: string, logger: Function) {
   return existingSongIds
 }
 
+function batchTrackList(trackList: Track[], directory: string, logger: Function) {
+  let batchSize = getSetting('batchSize') as number
+
+  if (batchSize < 0 || !batchSize) {
+    logger('invalid batch size')
+    throw 'invalid batch size'
+  }
+
+  const batches: Track[][] = []
+  for (let i = 0; i < trackList.length; i += batchSize) {
+    batches.push(trackList.slice(i, i + batchSize))
+  }
+
+  batches.forEach(async (batch) => {
+    await downloadSpotifyTrackList(batch, directory, logger)
+  })
+}
+
+// actually downloads the tracks
 function downloadSpotifyTrackList(trackList: Track[], directory: string, logger: Function) {
   let rawProgress = 0
   trackList.forEach(async (track) => {

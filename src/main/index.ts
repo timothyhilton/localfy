@@ -2,7 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join, resolve } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import startBackup from './backupHelper'
+import startBackup from './download-manager'
 import settings from 'electron-settings'
 import BackupHelperType from './types/BackupHelperType'
 import defaultSettingsValues from '../../resources/defaultSettingsValues.json'
@@ -71,7 +71,7 @@ app.whenReady().then(() => {
     const client_id = await settings.get('client_id')
     const codeChallenge = await settings.get('code_challenge')
 
-    console.log("codeChallenge", codeChallenge)
+    console.log('codeChallenge', codeChallenge)
     shell.openExternal(
       `https://accounts.spotify.com/authorize?response_type=code&client_id=${client_id}&scope=playlist-read-private%20user-read-recently-played%20user-library-read%20playlist-read-collaborative&redirect_uri=fyfy%3A%2F%2Fredirect&code_challenge=${codeChallenge}&code_challenge_method=S256`
     )
@@ -90,16 +90,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('getSetting', async (_event, setting: string) => {
-    try {
-      if (!(await settings.has(setting))) {
-        await settings.set(setting, defaultSettingsValues[setting])
-      }
-
-      return await settings.get(setting)
-    } catch (error) {
-      console.error(`Error getting setting ${setting}:`, error)
-      return defaultSettingsValues[setting]
-    }
+    return getSetting(setting)
   })
 
   ipcMain.handle('setSetting', async (_event, data: { setting: string; value: any }) => {
@@ -175,19 +166,32 @@ async function exchangeCodeForToken(code: string, codeVerifier: string) {
   const response = await fetch('https://accounts.spotify.com/api/token', {
     method: 'POST',
     headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
     body: new URLSearchParams({
       grant_type: 'authorization_code',
       code: code,
       redirect_uri: 'fyfy://redirect',
-      client_id: await settings.get('client_id') as string,
-      code_verifier: codeVerifier,
-    }),
+      client_id: (await settings.get('client_id')) as string,
+      code_verifier: codeVerifier
+    })
   })
 
   const data = await response.json()
   await settings.set('refresh_token', data.refresh_token)
 
   return data.access_token
+}
+
+export function getSetting(setting: string) {
+  try {
+    if (!settings.hasSync(setting)) {
+      settings.setSync(setting, defaultSettingsValues[setting])
+    }
+
+    return settings.getSync(setting)
+  } catch (error) {
+    console.error(`Error getting setting ${setting}:`, error)
+    return defaultSettingsValues[setting]
+  }
 }

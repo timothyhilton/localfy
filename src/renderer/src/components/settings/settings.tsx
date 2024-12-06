@@ -15,12 +15,16 @@ import { useLastListenedLengthStore } from "@renderer/stores/lastListenedLength"
 
 export default function Settings(){
   const [directory, setDirectory] = useState<string>()
+  const [batchSize, setBatchSize] = useState<string>()
   const { length } = useLastListenedLengthStore()
 
   useEffect(() => {
     window.api.getDirectory()
       .then(setDirectory)
-  }, []);
+    
+    window.api.getSetting("batchSize")
+      .then(setBatchSize)
+  }, [])
 
   function changeDirectory(){
     window.api.changeDirectory()
@@ -32,6 +36,11 @@ export default function Settings(){
   function updateLastListened(e: React.ChangeEvent<HTMLInputElement>){
     useLastListenedLengthStore.setState({ length: parseInt(e.target.value, 10) })
     window.api.setSetting({setting: 'lastListenedLength', value: parseInt(e.target.value, 10)})
+  }
+
+  function updateBatchSize(e: React.ChangeEvent<HTMLInputElement>){
+    window.api.setSetting({setting: 'batchSize', value: parseInt(e.target.value, 10)})
+    setBatchSize(e.target.value)
   }
 
   return(
@@ -80,6 +89,18 @@ export default function Settings(){
               min="1"
               max="50"
               onChange={updateLastListened}
+            />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="directory" className="text-right">
+              Batch Size
+            </Label>
+            <Input
+              defaultValue={batchSize}
+              type="number"
+              min="1"
+              max="30"
+              onChange={updateBatchSize}
             />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">

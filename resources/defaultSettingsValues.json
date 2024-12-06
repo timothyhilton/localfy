@@ -1,5 +1,6 @@
 {
   "saveCoverArt": true,
   "lastListenedLength": 10,
-  "useProxy": false
+  "useProxy": false,
+  "batchSize": 5
 }
