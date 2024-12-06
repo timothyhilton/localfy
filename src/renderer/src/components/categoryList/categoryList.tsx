@@ -20,17 +20,21 @@ export default function CategoryList(){
   useEffect(() => {
     async function fetchPlaylists() {
       const data = await callSpotifyApi("v1/me/playlists")
-      
-      const mappedPlaylists: TrackContainer[] = data.items.map((playlist: any) => ({
-        name: playlist.name,
-        id: playlist.id,
-        type: 'playlist',
-        imageUrl: (playlist.images && playlist.images[0] && playlist.images[0].url) || '',
-        trackListHref: playlist.tracks.href,
-        trackCount: playlist.tracks.total,
-      }));
+      console.log(data)
+
+      const mappedPlaylists: TrackContainer[] = 
+        data.items
+          .filter(p => p)  
+          .map((playlist: any) => ({
+            name: (playlist || playlist?.name) ? playlist.name : "testiguess?",
+            id: playlist.id,
+            type: 'playlist',
+            imageUrl: (playlist.images && playlist.images[0] && playlist.images[0].url) || '',
+            trackListHref: playlist.tracks.href,
+            trackCount: playlist.tracks.total,
+          }))
   
-      setPlaylists(mappedPlaylists);
+      setPlaylists(mappedPlaylists)
     }
   
     fetchPlaylists();
@@ -39,15 +43,15 @@ export default function CategoryList(){
   useEffect(() => {
     async function fetchSavedAlbums() {
       const data = await callSpotifyApi("v1/me/albums")
-  
-      const mappedAlbums: TrackContainer[] = data.items.map((item: any) => {
-        const mappedTracks: Track[] = item.album.tracks.items.map((track: any) => ({
+      
+      const mappedAlbums: TrackContainer[] = data.items.filter(a => a).map((item: any) => {
+        const mappedTracks: Track[] = item.album.tracks.items.filter(t => t).map((track: any) => ({
           name: track.name,
           artists: track.artists.map((artist: any) => artist.name),
           album: item.album.name,
           id: track.id,
           coverArtUrl: (item.album.images && item.album.images[0] && item.album.images[0].url) || '',
-        }));
+        }))
   
         return {
           name: item.album.name,
@@ -60,10 +64,10 @@ export default function CategoryList(){
         }
       })
   
-      setSavedAlbums(mappedAlbums);
+      setSavedAlbums(mappedAlbums)
     }
   
-    fetchSavedAlbums();
+    fetchSavedAlbums()
   }, []);
 
   useEffect(() => {
@@ -72,13 +76,16 @@ export default function CategoryList(){
       
       const data = await callSpotifyApi(`v1/me/player/recently-played?limit=${length}`)
   
-      const mappedTracks: Track[] = data.items.map((item: any) => ({
-        name: item.track.name,
-        artists: item.track.artists.map((artist: any) => artist.name),
-        album: item.track.album.name,
-        id: item.track.id,
-        coverArtUrl: (item.track.album.images && item.track.album.images[0] && item.track.album.images[0].url) || '',
-      }));
+      const mappedTracks: Track[] = 
+        data.items
+          .filter(t => t)
+          .map((item: any) => ({
+            name: item.track.name,
+            artists: item.track.artists.map((artist: any) => artist.name),
+            album: item.track.album.name,
+            id: item.track.id,
+            coverArtUrl: (item.track.album.images && item.track.album.images[0] && item.track.album.images[0].url) || '',
+          }))
   
       const lastListenedContainer: TrackContainer = {
         name: "Recently Played",
@@ -88,13 +95,13 @@ export default function CategoryList(){
         trackListHref: data.href,
         trackCount: mappedTracks.length,
         tracks: mappedTracks,
-      };
+      }
   
-      setLastListened(lastListenedContainer);
+      setLastListened(lastListenedContainer)
     }
   
-    fetchLastListened();
-  }, [length]);
+    fetchLastListened()
+  }, [length])
 
   return (
     <Accordion type="single" collapsible className="m-4 px-4 rounded-lg bg-slate-50 border dark:bg-slate-900">
